@@ -40,6 +40,10 @@ function paint(index: number): void {
   // liquid in it rather than a bar on a chart --- which matters more than it
   // sounds, because the whole design rests on a stranger knowing to tap it.
   glass.querySelector(".surface")?.setAttribute("cy", line.toFixed(1));
+  // The strike bloom goes off at the waterline, so it follows it.
+  glass.querySelector(".bloom")?.setAttribute("cy", line.toFixed(1));
+  // An empty glass would otherwise keep a full ellipse of water on its floor.
+  glass.querySelector(".water-base")?.setAttribute("opacity", level < 0.01 ? "0" : "1");
 
   glass.setAttribute("aria-valuenow", String(Math.round(level * 100)));
 }

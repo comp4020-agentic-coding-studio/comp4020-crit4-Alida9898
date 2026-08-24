@@ -1,11 +1,33 @@
 :root {
-  --ink: #0d1b26;
-  --muted: #4a626f;
-  --page: #eef4f7;
-  --wall: #6f97ab;
-  --water: #3fa3c6;
-  --water-lit: #6fc4e0;
-  --link: #0b5fff;
+  --ground: #070d14;
+  --ground-lift: #101f2b;
+  --ink: #dbeaf2;
+
+  /*
+    Contrast here is UNVERIFIED BY ANY TOOL, so the numbers have to live where
+    someone will see them. jsdom's axe skips contrast entirely (no layout), and
+    axe in Chrome returns *incomplete* rather than a pass, because the page
+    ground is a gradient and it cannot resolve one background colour.
+
+    So: measured by hand against --ground-lift #101f2b, the LIGHTEST point of
+    that gradient and therefore the worst case for pale text.
+      --muted on it   6.6:1
+      --link on it   10.0:1
+    Both clear AA. If either the palette or the gradient moves, these are stale
+    and nothing will tell you --- re-measure.
+  */
+  --muted: #8aa7b8;
+  --link: #7fd4f0;
+  --edge: #a9dcf2;
+  --glow: #4fd2f5;
+}
+
+/* body carries both padding and a 100dvh floor; without this they add up and
+   the phone gains exactly 40px of scroll. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -14,7 +36,12 @@ body {
   font-family: system-ui, sans-serif;
   line-height: 1.6;
   color: var(--ink);
-  background: var(--page);
+
+  /* Lit from behind the rack, so the glasses sit in the light rather than on it. */
+  background:
+    radial-gradient(120% 80% at 50% 42%, var(--ground-lift) 0%, var(--ground) 62%),
+    var(--ground);
+  min-height: 100dvh;
 }
 
 a {
@@ -23,30 +50,26 @@ a {
 
 h1 {
   margin: 0;
-
-  /*
-    A solid colour, not `opacity`, and measured: at 0.4 opacity this read as a
-    quiet label but failed contrast at 12.8px, which jsdom's axe cannot see (no
-    layout, so no computed colour) and `ab a11y` caught in Chrome. #4a626f on
-    the page ground is 5.8:1.
-  */
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--muted);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.defs {
+  position: absolute;
 }
 
 main {
   /*
-    The instrument is the page, so it gets the page. Sizing the rack off the
-    viewport (rather than a max-width column) is what keeps the whole thing
-    above the fold at 1080 --- an instrument you have to scroll to has buried
-    its own point.
+    The instrument is the page, so it gets the page. Sizing off the viewport
+    rather than a max-width column is what keeps the whole thing above the fold
+    at 1080 --- an instrument you have to scroll to has buried its own point.
   */
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
   justify-content: center;
   min-height: calc(100dvh - 8rem);
@@ -61,16 +84,15 @@ main {
 
   /*
     No height here on purpose. The glasses scale by WIDTH (the SVG keeps its
-    aspect), so a fixed rack height just reserves dead space that nothing can
-    grow into --- which is what buried them in the middle of an empty phone
-    screen. Let the row shrink-wrap the glasses and let main do the centring.
+    aspect), so a fixed rack height just reserves dead space nothing can grow
+    into --- which is what stranded seven small glasses in the middle of an
+    empty phone screen.
   */
   max-width: min(68rem, 96vw);
 
   /*
     Without this a vertical drag on a phone scrolls the page instead of pouring,
-    so the tuning gesture simply would not exist on the viewport that has the
-    most fingers on it.
+    so the tuning gesture would not exist on the viewport with the most fingers.
   */
   touch-action: none;
 }
@@ -83,7 +105,7 @@ main {
 }
 
 .glass:focus-visible {
-  outline: 3px solid var(--link);
+  outline: 2px solid var(--link);
   outline-offset: 4px;
 }
 
@@ -93,7 +115,7 @@ main {
   height: auto;
 
   /* Tall viewports would otherwise grow the glasses past the fold. */
-  max-height: min(60dvh, 30rem);
+  max-height: min(62dvh, 32rem);
 
   /*
     The pointer is tracked with elementFromPoint, and an SVG child would answer
@@ -102,33 +124,78 @@ main {
   pointer-events: none;
 }
 
+/* --- the vessel --- */
+
 .wall,
 .rim {
   fill: none;
-  stroke: var(--wall);
-  stroke-width: 2;
+  stroke: var(--edge);
+  stroke-width: 1.4;
+  opacity: 0.45;
 }
 
-.base {
-  fill: #fff6;
+.rim {
+  opacity: 0.65;
 }
+
+.sheen {
+  fill: url("#wall-sheen");
+}
+
+/* The unlit air below the waterline, so an empty glass is not a hole. */
+.cavity {
+  fill: #ffffff0a;
+}
+
+/* --- the water --- */
 
 .water,
 .water-base {
-  fill: var(--water);
-  transition: y 90ms linear, height 90ms linear, cy 90ms linear;
+  fill: url("#water-fill");
+  transition: y 90ms linear, height 90ms linear, cy 90ms linear, opacity 90ms linear;
 }
 
-/* The lit ellipse at the waterline: a meniscus, and the vessel reads as a vessel. */
 .surface {
-  fill: var(--water-lit);
+  fill: #b6f4ff;
+  filter: drop-shadow(0 0 6px var(--glow));
   transition: cy 90ms linear;
   transform-box: fill-box;
   transform-origin: center;
 }
 
+/* The light a struck glass throws, so the sound has something to look like. */
+.bloom {
+  fill: url("#bloom-fill");
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.glass.ringing .bloom {
+  animation: bloom 460ms ease-out;
+}
+
 .glass.ringing .surface {
   animation: shiver 340ms ease-out;
+}
+
+/* Where the rack stands. */
+.reflect {
+  fill: var(--glow);
+  opacity: 0.16;
+  filter: blur(3px);
+}
+
+@keyframes bloom {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.35);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
 }
 
 @keyframes shiver {
@@ -152,6 +219,7 @@ main {
     transition: none;
   }
 
+  .glass.ringing .bloom,
   .glass.ringing .surface {
     animation: none;
   }
