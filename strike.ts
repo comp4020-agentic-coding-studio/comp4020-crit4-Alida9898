@@ -12,13 +12,27 @@ import { brightness, strikeGain } from "./tuning.ts";
  * percussion sound like a doorbell.
  */
 const PARTIALS = [
-  { ratio: 1, decay: 2.6, level: 1 },
-  { ratio: 2.71, decay: 0.9, level: 0.4 },
-  { ratio: 5.43, decay: 0.35, level: 0.18 },
+  { ratio: 1, decay: 2.4, level: 1 },
+  { ratio: 2.71, decay: 1.1, level: 0.42 },
+  { ratio: 4.32, decay: 0.55, level: 0.22 },
+  { ratio: 5.43, decay: 0.28, level: 0.13 },
 ];
 
 let context: AudioContext | undefined;
 let bus: DynamicsCompressorNode | undefined;
+let noise: AudioBuffer | undefined;
+
+/** White noise, made once and re-used --- the raw material of the contact tap. */
+function noiseBuffer(ctx: AudioContext): AudioBuffer {
+  if (!noise) {
+    const length = Math.floor(ctx.sampleRate * 0.1);
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const samples = buffer.getChannelData(0);
+    for (let i = 0; i < length; i += 1) samples[i] = Math.random() * 2 - 1;
+    noise = buffer;
+  }
+  return noise;
+}
 
 /** Exposed so a test can assert nothing is running before the first gesture. */
 export function isAwake(): boolean {
@@ -58,9 +72,30 @@ export function strike(hz: number, force: number): void {
   const peak = strikeGain(force);
   const bright = brightness(force);
 
+  // The contact transient: the few milliseconds of the spoon actually touching
+  // the glass, before anything has begun to ring. Without it the partials fade
+  // up out of silence and the ear hears a tone appearing rather than an object
+  // being hit -- which is why the first version sounded synthesised no matter
+  // how the partials were tuned. This, not the ratios, is what says "struck".
+  const tap = ctx.createBufferSource();
+  tap.buffer = noiseBuffer(ctx);
+  const colour = ctx.createBiquadFilter();
+  colour.type = "bandpass";
+  colour.frequency.value = Math.min(hz * 6, 9000);
+  colour.Q.value = 1.1;
+  const tapEnv = ctx.createGain();
+  tapEnv.gain.setValueAtTime(peak * 0.55 * bright, now);
+  tapEnv.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+  tap.connect(colour).connect(tapEnv).connect(bus);
+  tap.start(now);
+  tap.stop(now + 0.1);
+
   for (const partial of PARTIALS) {
     const osc = ctx.createOscillator();
     osc.frequency.value = hz * partial.ratio;
+    // No two taps on a real glass are identical. A few cents of scatter stops
+    // a fast sweep sounding like the same sample seven times.
+    osc.detune.value = (Math.random() - 0.5) * 9;
 
     const env = ctx.createGain();
     const level = peak * partial.level * (partial.ratio === 1 ? 1 : bright);
