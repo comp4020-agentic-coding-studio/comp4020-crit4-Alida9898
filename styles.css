@@ -1,23 +1,20 @@
 :root {
   --ink: #0d1b26;
-  --page: #f2f6f8;
-  --glass-wall: #7fa6b8;
-  --glass-water: #4aa8c8;
+  --muted: #4a626f;
+  --page: #eef4f7;
+  --wall: #6f97ab;
+  --water: #3fa3c6;
+  --water-lit: #6fc4e0;
   --link: #0b5fff;
 }
 
 body {
   margin: 0;
-  padding: 1.5rem 1rem;
+  padding: 1.25rem 1rem;
   font-family: system-ui, sans-serif;
   line-height: 1.6;
   color: var(--ink);
   background: var(--page);
-}
-
-main {
-  max-width: 60rem;
-  margin: 0 auto;
 }
 
 a {
@@ -25,23 +22,54 @@ a {
 }
 
 h1 {
-  margin: 0 0 1.25rem;
-  font-size: 1rem;
+  margin: 0;
+
+  /*
+    A solid colour, not `opacity`, and measured: at 0.4 opacity this read as a
+    quiet label but failed contrast at 12.8px, which jsdom's axe cannot see (no
+    layout, so no computed colour) and `ab a11y` caught in Chrome. #4a626f on
+    the page ground is 5.8:1.
+  */
+  font-size: 0.8rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  color: var(--muted);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.55;
+}
+
+main {
+  /*
+    The instrument is the page, so it gets the page. Sizing the rack off the
+    viewport (rather than a max-width column) is what keeps the whole thing
+    above the fold at 1080 --- an instrument you have to scroll to has buried
+    its own point.
+  */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100dvh - 8rem);
 }
 
 .rack {
   display: flex;
-  gap: clamp(4px, 1.2vw, 14px);
-  align-items: flex-end;
+  gap: clamp(4px, 1.2vw, 22px);
+  align-items: center;
   justify-content: center;
+  width: 100%;
+
+  /*
+    No height here on purpose. The glasses scale by WIDTH (the SVG keeps its
+    aspect), so a fixed rack height just reserves dead space that nothing can
+    grow into --- which is what buried them in the middle of an empty phone
+    screen. Let the row shrink-wrap the glasses and let main do the centring.
+  */
+  max-width: min(68rem, 96vw);
 
   /*
     Without this a vertical drag on a phone scrolls the page instead of pouring,
-    and the tuning gesture simply does not exist on the viewport that has the
+    so the tuning gesture simply would not exist on the viewport that has the
     most fingers on it.
   */
   touch-action: none;
@@ -49,21 +77,23 @@ h1 {
 
 .glass {
   flex: 1 1 0;
-  max-width: 7rem;
-  padding: 0;
-  border-radius: 6px;
+  min-width: 0;
+  border-radius: 8px;
   cursor: ns-resize;
 }
 
 .glass:focus-visible {
   outline: 3px solid var(--link);
-  outline-offset: 3px;
+  outline-offset: 4px;
 }
 
 .glass-art {
   display: block;
   width: 100%;
   height: auto;
+
+  /* Tall viewports would otherwise grow the glasses past the fold. */
+  max-height: min(60dvh, 30rem);
 
   /*
     The pointer is tracked with elementFromPoint, and an SVG child would answer
@@ -72,41 +102,57 @@ h1 {
   pointer-events: none;
 }
 
-.wall {
+.wall,
+.rim {
   fill: none;
-  stroke: var(--glass-wall);
-  stroke-width: 2.5;
+  stroke: var(--wall);
+  stroke-width: 2;
 }
 
-.water {
-  fill: var(--glass-water);
-  transition: y 90ms linear, height 90ms linear;
+.base {
+  fill: #fff6;
 }
 
-.glass.ringing .water {
-  animation: shiver 320ms ease-out;
+.water,
+.water-base {
+  fill: var(--water);
+  transition: y 90ms linear, height 90ms linear, cy 90ms linear;
+}
+
+/* The lit ellipse at the waterline: a meniscus, and the vessel reads as a vessel. */
+.surface {
+  fill: var(--water-lit);
+  transition: cy 90ms linear;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.glass.ringing .surface {
+  animation: shiver 340ms ease-out;
 }
 
 @keyframes shiver {
   0% {
-    opacity: 1;
+    transform: scaleY(1);
   }
 
-  25% {
-    opacity: 0.55;
+  30% {
+    transform: scaleY(1.9);
   }
 
   100% {
-    opacity: 1;
+    transform: scaleY(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .water {
+  .water,
+  .water-base,
+  .surface {
     transition: none;
   }
 
-  .glass.ringing .water {
+  .glass.ringing .surface {
     animation: none;
   }
 }

@@ -4,9 +4,9 @@ import { beginPour, endPour, pourTo, strike } from "./strike.ts";
 import { BOTTLE_COUNT, defaultWaterLevels, frequencyAt, snapToScale } from "./tuning.ts";
 
 /** Where the water lives inside the glass artwork, in viewBox units. */
-const SURFACE_TOP = 16;
-const FLOOR = 156;
-const DEPTH = FLOOR - SURFACE_TOP;
+const RIM = 16;
+const FLOOR = 164;
+const DEPTH = FLOOR - RIM;
 
 /** How far a pointer travels before we decide what gesture it is. */
 const INTENT_PX = 6;
@@ -23,9 +23,16 @@ function paint(index: number): void {
   if (!glass || level === undefined) return;
 
   const height = level * DEPTH;
-  const surface = glass.querySelector(".water");
-  surface?.setAttribute("y", (FLOOR - height).toFixed(1));
-  surface?.setAttribute("height", height.toFixed(1));
+  const line = FLOOR - height;
+
+  const body = glass.querySelector(".water");
+  body?.setAttribute("y", line.toFixed(1));
+  body?.setAttribute("height", height.toFixed(1));
+  // The ellipse at the waterline is what makes the shape read as a vessel with
+  // liquid in it rather than a bar on a chart --- which matters more than it
+  // sounds, because the whole design rests on a stranger knowing to tap it.
+  glass.querySelector(".surface")?.setAttribute("cy", line.toFixed(1));
+
   glass.setAttribute("aria-valuenow", String(Math.round(level * 100)));
 }
 

@@ -30,22 +30,38 @@ describe("the rack you get before the script runs", () => {
   });
 
   it("draws the water where it says the water is", () => {
-    // Checked as a relationship rather than against copied constants, so the
-    // artwork can be redrawn without this going stale: every glass must agree
-    // on where its floor is, and fill in proportion to the value it announces.
-    const ratios = glasses.map((glass) => {
-      const surface = glass.querySelector(".water");
-      expect(surface, "a glass with no water to draw").not.toBeNull();
-      if (!surface) return 0;
+    // Held as relationships between the glasses rather than against numbers
+    // copied out of the artwork, so the glass can be redrawn without this going
+    // stale: they must agree on where the floor is, and each must fill in
+    // proportion to the level it announces.
+    const drawn = glasses.map((glass) => {
+      const body = glass.querySelector(".water");
+      const surface = glass.querySelector(".surface");
+      expect(body, "a glass with no water to draw").not.toBeNull();
+      expect(surface, "a glass with no waterline — it would read as a bar chart").not.toBeNull();
 
-      const level = attr(glass, "aria-valuenow");
-      const height = attr(surface, "height");
-      expect(attr(surface, "y") + height, "this glass has a different floor to the others").toBeCloseTo(156, 1);
-      return level === 0 ? Number.NaN : height / level;
+      const height = attr(body!, "height");
+      const line = attr(body!, "y");
+      // The lit ellipse has to sit exactly on top of the water, or the glass
+      // looks like it is leaking.
+      expect(attr(surface!, "cy"), "the waterline is drawn away from the water").toBeCloseTo(line, 1);
+
+      return { floor: line + height, height, level: attr(glass, "aria-valuenow") };
     });
 
-    for (const ratio of ratios.filter((value) => !Number.isNaN(value))) {
-      expect(ratio, "the water heights are not proportional to the announced levels").toBeCloseTo(1.4, 1);
+    const [first] = drawn;
+    // Glass 1 is full, so its height IS the scale. Compared in viewBox units
+    // rather than as a ratio: aria-valuenow is a whole percent, so the ratio
+    // wobbles by more at the shallow end than a tight tolerance allows, while
+    // the drawn error stays well under a unit either way.
+    const perLevel = first!.height / first!.level;
+
+    for (const glass of drawn) {
+      expect(glass.floor, "this glass has a different floor to the others").toBeCloseTo(first!.floor, 1);
+      expect(
+        Math.abs(glass.height - perLevel * glass.level),
+        "the water is drawn at a different level to the one announced",
+      ).toBeLessThan(1);
     }
   });
 
