@@ -1,16 +1,112 @@
+:root {
+  --ink: #0d1b26;
+  --page: #f2f6f8;
+  --glass-wall: #7fa6b8;
+  --glass-water: #4aa8c8;
+  --link: #0b5fff;
+}
+
 body {
   margin: 0;
-  padding: 2rem;
+  padding: 1.5rem 1rem;
   font-family: system-ui, sans-serif;
   line-height: 1.6;
-  color: #1a1a1a;
+  color: var(--ink);
+  background: var(--page);
 }
 
 main {
-  max-width: 40rem;
+  max-width: 60rem;
   margin: 0 auto;
 }
 
 a {
-  color: #0b5fff;
+  color: var(--link);
+}
+
+h1 {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.rack {
+  display: flex;
+  gap: clamp(4px, 1.2vw, 14px);
+  align-items: flex-end;
+  justify-content: center;
+
+  /*
+    Without this a vertical drag on a phone scrolls the page instead of pouring,
+    and the tuning gesture simply does not exist on the viewport that has the
+    most fingers on it.
+  */
+  touch-action: none;
+}
+
+.glass {
+  flex: 1 1 0;
+  max-width: 7rem;
+  padding: 0;
+  border-radius: 6px;
+  cursor: ns-resize;
+}
+
+.glass:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 3px;
+}
+
+.glass-art {
+  display: block;
+  width: 100%;
+  height: auto;
+
+  /*
+    The pointer is tracked with elementFromPoint, and an SVG child would answer
+    instead of the glass on some hits. Nothing inside needs to be hittable.
+  */
+  pointer-events: none;
+}
+
+.wall {
+  fill: none;
+  stroke: var(--glass-wall);
+  stroke-width: 2.5;
+}
+
+.water {
+  fill: var(--glass-water);
+  transition: y 90ms linear, height 90ms linear;
+}
+
+.glass.ringing .water {
+  animation: shiver 320ms ease-out;
+}
+
+@keyframes shiver {
+  0% {
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 0.55;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water {
+    transition: none;
+  }
+
+  .glass.ringing .water {
+    animation: none;
+  }
 }

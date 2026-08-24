@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>COMP4020 prototype</title>
+    <title>Water glasses</title>
     <meta
       name="description"
-      content="Replace this with one sentence saying what this page is. A search result and a link preview both show it."
+      content="A rack of glasses you can tap to play and pour to tune. Every note is synthesised in the browser as you touch it."
     />
 
     <!--
@@ -27,11 +27,134 @@
       </nav>
     </header>
     <main>
-      <h1>COMP4020 prototype</h1>
-      <p data-testid="intro">
-        Replace this with your prototype. This week's brief is on the course website;
-        <code>spec/README.md</code> explains how the checks in this repo relate to it.
-      </p>
+      <h1>Water glasses</h1>
+
+      <!--
+        The glasses are written out here rather than built by the script, for two
+        reasons. A slow or failed load otherwise leaves a blank page with nothing
+        to touch, and the spec's checks read the SHIPPED markup, not the DOM after
+        hydration.
+
+        role="slider" is not decoration: the water level IS the value, so arrow
+        keys are already the right keys and a screen reader already announces the
+        right thing. The water heights below are the tuned starting set --- an
+        ascending pentatonic run --- and spec/page.test.ts pins them to
+        defaultWaterLevels() so this no-script state can't drift into a lie.
+      -->
+      <div class="rack" id="rack">
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="0"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 1"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="100"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="16" width="44" height="140" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="1"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 2"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="92"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="27.7" width="44" height="128.3" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="2"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 3"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="83"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="39.4" width="44" height="116.6" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="3"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 4"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="71"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="56.8" width="44" height="99.2" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="4"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 5"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="63"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="68.5" width="44" height="87.5" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="5"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 6"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="50"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="86" width="44" height="70" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+        <div
+          class="glass"
+          data-axis="water"
+          data-glass="6"
+          role="slider"
+          tabindex="0"
+          aria-label="Glass 7"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="42"
+        >
+          <svg class="glass-art" viewBox="0 0 60 170" aria-hidden="true" focusable="false">
+            <rect class="water" x="8" y="97.7" width="44" height="58.3" rx="2" />
+            <rect class="wall" x="6" y="10" width="48" height="150" rx="5" />
+          </svg>
+        </div>
+      </div>
     </main>
     <script type="module" src="./main.ts"></script>
   </body>
