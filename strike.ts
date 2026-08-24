@@ -19,7 +19,6 @@ const PARTIALS = [
 
 let context: AudioContext | undefined;
 let bus: DynamicsCompressorNode | undefined;
-let tuner: { osc: OscillatorNode; gain: GainNode } | undefined;
 
 /** Exposed so a test can assert nothing is running before the first gesture. */
 export function isAwake(): boolean {
@@ -79,37 +78,8 @@ export function strike(hz: number, force: number): void {
   }
 }
 
-/**
- * While you are pouring, the glass hums at the pitch it currently holds, so the
- * tuning is done by ear rather than by watching a number. It is deliberately
- * quieter than a strike: you are listening past it to the note you want.
- */
-export function beginPour(hz: number): void {
-  const ctx = wake();
-  if (!bus || tuner) return;
-
-  const osc = ctx.createOscillator();
-  osc.frequency.value = hz;
-  const gain = ctx.createGain();
-  gain.gain.value = 0;
-  gain.gain.setTargetAtTime(0.045, ctx.currentTime, 0.02);
-  osc.connect(gain).connect(bus);
-  osc.start();
-  tuner = { osc, gain };
-}
-
-export function pourTo(hz: number): void {
-  if (!context || !tuner) return;
-  // A glide, not a jump. Stepping a running oscillator's frequency clicks, and
-  // water does not click.
-  tuner.osc.frequency.setTargetAtTime(hz, context.currentTime, 0.012);
-}
-
-export function endPour(): void {
-  if (!context || !tuner) return;
-  const { osc, gain } = tuner;
-  tuner = undefined;
-  const now = context.currentTime;
-  gain.gain.setTargetAtTime(0, now, 0.05);
-  osc.stop(now + 0.4);
-}
+// Pouring used to hold a sustained oscillator that glided with the water. It
+// whined --- an OscillatorNode defaults to a sine, and a steady pure tone next
+// to a struck, inharmonic, decaying voice is audibly a different instrument.
+// Pouring now rings the glass itself on each note it passes (see main.ts), so
+// there is only ever one voice on the page.

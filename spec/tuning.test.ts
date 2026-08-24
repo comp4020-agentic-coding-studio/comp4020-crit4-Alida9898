@@ -6,7 +6,9 @@ import {
   FULL_HZ,
   brightness,
   defaultWaterLevels,
+  degreeIndexAt,
   frequencyAt,
+  pouredLevel,
   snapToScale,
   strikeGain,
   waterLevelFor,
@@ -86,6 +88,49 @@ describe("the set you find on the page", () => {
   it("starts in tune, so the first gesture already sounds like music", () => {
     for (const level of levels) {
       expect(snapToScale(level)).toBeCloseTo(level, 6);
+    }
+  });
+});
+
+describe("the waterline follows the hand", () => {
+  // Found by playing it, not by a test: the first version sent the water UP
+  // when the hand went DOWN. Both directions animate smoothly and neither
+  // errors, so this is here to make sure it can only be found once.
+  it("falls when you drag down", () => {
+    expect(pouredLevel(0.5, 100, 200)).toBeLessThan(0.5);
+  });
+
+  it("rises when you drag up", () => {
+    expect(pouredLevel(0.5, -100, 200)).toBeGreaterThan(0.5);
+  });
+
+  it("moves the waterline as far as the hand", () => {
+    expect(pouredLevel(1, 220, 220)).toBeCloseTo(0, 6);
+    expect(pouredLevel(0.5, -55, 220)).toBeCloseTo(0.75, 6);
+  });
+
+  it("cannot be dragged out of the glass", () => {
+    expect(pouredLevel(0.5, 9999, 220)).toBe(0);
+    expect(pouredLevel(0.5, -9999, 220)).toBe(1);
+  });
+});
+
+describe("pouring rings the notes it passes", () => {
+  it("walks the scale one note at a time as the glass fills", () => {
+    const seen = [];
+    for (let water = 0; water <= 1; water += 0.002) seen.push(degreeIndexAt(water));
+
+    const steps = [...new Set(seen)];
+    expect(steps, "pouring should pass every note in the scale").toHaveLength(DEGREES_HZ.length);
+    // Never skips and never doubles back: filling only ever lowers the pitch.
+    for (let i = 1; i < steps.length; i += 1) {
+      expect(steps[i]).toBe((steps[i - 1] ?? 0) - 1);
+    }
+  });
+
+  it("agrees with where the glass settles", () => {
+    for (let water = 0; water <= 1; water += 0.03) {
+      expect(frequencyAt(snapToScale(water))).toBeCloseTo(DEGREES_HZ[degreeIndexAt(water)] ?? 0, 6);
     }
   });
 });

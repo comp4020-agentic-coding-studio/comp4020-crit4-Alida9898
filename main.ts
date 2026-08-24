@@ -1,7 +1,15 @@
 // Wiring: gestures and keys in, water levels and sound out.
 
-import { beginPour, endPour, pourTo, strike } from "./strike.ts";
-import { BOTTLE_COUNT, defaultWaterLevels, frequencyAt, snapToScale } from "./tuning.ts";
+import { strike } from "./strike.ts";
+import {
+  BOTTLE_COUNT,
+  DEGREES_HZ,
+  defaultWaterLevels,
+  degreeIndexAt,
+  frequencyAt,
+  pouredLevel,
+  snapToScale,
+} from "./tuning.ts";
 
 /** Where the water lives inside the glass artwork, in viewBox units. */
 const RIM = 16;
@@ -36,12 +44,12 @@ function paint(index: number): void {
   glass.setAttribute("aria-valuenow", String(Math.round(level * 100)));
 }
 
-function ring(index: number, force: number): void {
+function ring(index: number, force: number, hz?: number): void {
   const level = water[index];
   const glass = glasses[index];
   if (level === undefined || !glass) return;
 
-  strike(frequencyAt(level), force);
+  strike(hz ?? frequencyAt(level), force);
   // A struck glass shivers. Restarting the animation means a fast sweep flashes
   // each glass separately instead of one long smear.
   glass.classList.remove("ringing");
@@ -71,6 +79,7 @@ type Gesture = {
   startLevel: number;
   lastX: number;
   lastAt: number;
+  lastDegree: number;
 };
 
 let gesture: Gesture | undefined;
@@ -98,6 +107,7 @@ rack?.addEventListener("pointerdown", (event: PointerEvent) => {
     startLevel: water[index] ?? 0,
     lastX: event.clientX,
     lastAt: event.timeStamp,
+    lastDegree: degreeIndexAt(water[index] ?? 0),
   };
   rack.setPointerCapture(event.pointerId);
   event.preventDefault();
@@ -112,16 +122,21 @@ rack?.addEventListener("pointermove", (event: PointerEvent) => {
   if (gesture.mode === "undecided") {
     if (Math.hypot(dx, dy) < INTENT_PX) return;
     gesture.mode = Math.abs(dy) > Math.abs(dx) ? "pouring" : "playing";
-    if (gesture.mode === "pouring") beginPour(frequencyAt(gesture.startLevel));
   }
 
   if (gesture.mode === "pouring") {
-    // Drag down to fill: the water follows the hand, which is the only mapping
-    // that survives someone not reading anything.
-    const level = Math.min(1, Math.max(0, gesture.startLevel + dy / POUR_TRAVEL_PX));
+    // You are dragging the waterline itself, so it has to end up under your
+    // finger. The direction lives in pouredLevel() so a test can hold it.
+    const level = pouredLevel(gesture.startLevel, dy, POUR_TRAVEL_PX);
     water[gesture.glass] = level;
     paint(gesture.glass);
-    pourTo(frequencyAt(level));
+
+    // Ring on each note the water passes, in the glass's own voice.
+    const degree = degreeIndexAt(level);
+    if (degree !== gesture.lastDegree) {
+      gesture.lastDegree = degree;
+      ring(gesture.glass, 0.3, DEGREES_HZ[degree]);
+    }
     return;
   }
 
@@ -140,12 +155,10 @@ function release(): void {
   gesture = undefined;
 
   if (mode !== "pouring") return;
-  // Free while pouring, in tune once you stop: you hear every pitch on the way
-  // so the tuning is done by ear, and the note you land on is still one that
-  // belongs with the others.
+  // Settles onto the last note it rang, so the snap confirms what you just
+  // heard instead of surprising you with somewhere you never went.
   water[glass] = snapToScale(water[glass] ?? 0);
   paint(glass);
-  endPour();
   ring(glass, 0.5);
 }
 
@@ -177,7 +190,10 @@ document.addEventListener("keydown", (event: KeyboardEvent) => {
   switch (event.key) {
     case "ArrowUp":
     case "ArrowDown": {
-      const direction = event.key === "ArrowDown" ? 1 : -1;
+      // Up adds water. Matches the drag, and matches the slider contract too:
+      // aria-valuenow IS the water level, so an arrow that raised the water
+      // while lowering the announced number would be its own bug.
+      const direction = event.key === "ArrowUp" ? 1 : -1;
       water[index] = Math.min(1, Math.max(0, (water[index] ?? 0) + direction * step));
       paint(index);
       ring(index, 0.4);

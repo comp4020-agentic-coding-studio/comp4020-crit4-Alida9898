@@ -51,23 +51,43 @@ export function waterLevelFor(hz: number): number {
 }
 
 /**
- * Where a bottle comes to rest. Dragging is free --- you hear every pitch in
- * between, which is the whole point of tuning by ear --- and only the release
- * settles onto a degree. Compare in log space: a semitone is a semitone whether
- * it's down at C4 or up at C6.
+ * Which note this water level is closest to. Compared in log space, because a
+ * semitone is a semitone whether it's down at C4 or up at C6.
+ *
+ * Pouring rings the glass each time this changes, which is the only honest
+ * feedback to give: the pitches in between are ones the glass cannot keep, so
+ * gliding through them promises something the instrument does not do.
  */
-export function snapToScale(water: number): number {
+export function degreeIndexAt(water: number): number {
   const hz = frequencyAt(water);
-  let nearest = DEGREES_HZ[0] ?? FULL_HZ;
+  let nearest = 0;
   let nearestDistance = Infinity;
-  for (const degree of DEGREES_HZ) {
+  DEGREES_HZ.forEach((degree, index) => {
     const distance = Math.abs(Math.log2(hz / degree));
     if (distance < nearestDistance) {
       nearestDistance = distance;
-      nearest = degree;
+      nearest = index;
     }
-  }
-  return waterLevelFor(nearest);
+  });
+  return nearest;
+}
+
+/**
+ * Where the waterline ends up after a drag of `dy` pixels (positive is DOWN the
+ * screen) starting from `startLevel`.
+ *
+ * A one-line sum, pulled out here only so its direction can be held by a test.
+ * The first version added dy instead of subtracting it, so the surface fled
+ * upward from a downward hand --- and nothing catches that but a hand, because
+ * both versions animate smoothly and neither errors.
+ */
+export function pouredLevel(startLevel: number, dy: number, travel: number): number {
+  return clamp01(startLevel - dy / travel);
+}
+
+/** Where a glass comes to rest when you take your hand off it. */
+export function snapToScale(water: number): number {
+  return waterLevelFor(DEGREES_HZ[degreeIndexAt(water)] ?? FULL_HZ);
 }
 
 /**
