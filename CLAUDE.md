@@ -87,7 +87,8 @@ PATH. `agent-browser` is not installed globally --- run it through pnpm:
 
 ```sh
 ab() { pnpm dlx agent-browser@0.34.0 "$@"; }   # zsh: a function, NOT a variable
-ab open http://localhost:5177/
+ab open http://localhost:5173/                # 5173, not the 5177 of an older
+                                              # repo: no `server` block here
 ab set viewport 1920 1080     # `viewport` lives under `set`, not at top level
 ab reload && ab screenshot /tmp/desktop.png
 ab set viewport 390 844 && ab reload && ab screenshot /tmp/phone.png
@@ -121,6 +122,13 @@ Two checks only a real browser can do, so they do not belong in `pnpm check`:
   is how amber labels ended up on a cream plate at 1.77:1 after being measured at
   8.6:1 on the dark. Where the geometry allows it, make the rule positional
   instead --- in A1, `spec/pages.test.ts` forbade a label inside a plate's rect.
+- **A gradient background downgrades contrast from a check to a guess.** On C4's
+  dark page `ab a11y` returns *incomplete*, not a pass, for every text node: axe
+  cannot resolve one background colour behind them. So nothing automatic covers
+  it at all --- not jsdom, not Chrome. Measure by hand against the *lightest*
+  point of the gradient (worst case for pale text) and write the ratio into the
+  CSS beside the value, because that hand-check expires the moment either the
+  palette or the gradient moves and nothing will say so.
 - **Both marking viewports.** 1920x1080 and 390x844 each count in full. Check
   that the core interaction is reachable without a scroll at 1080 --- a page
   whose interaction is below the fold has buried its own point.
@@ -148,6 +156,21 @@ finished while broken:
 
 In A1 both were pinned in `spec/nav.test.ts` and `spec/pages.test.ts`; if this
 prototype grows a nav, pin them again here rather than trusting the memory.
+
+## A gesture's direction is untestable where it usually lives
+
+C4's pour gesture sent the water *up* when the hand went *down*. Both directions
+animate smoothly, neither errors, and the suite was green through the whole
+thing --- it was found by a person dragging a glass and saying "why does this go
+the wrong way". The sum was one line inside a `pointermove` handler, which is a
+place a unit test cannot reach: importing the module needs a DOM, an
+`AudioContext` and synthetic `PointerEvent`s before it can assert anything.
+
+So: when a gesture maps input to state, put the arithmetic in a pure function
+and call it from the handler. `pouredLevel(startLevel, dy, travel)` in
+`tuning.ts` exists for no reason except that its direction can then be two lines
+in `spec/tuning.test.ts`. Applies to anything with a sign in it --- scroll,
+drag, zoom, scrub.
 
 ## Facts about this stack that have each cost a run
 
