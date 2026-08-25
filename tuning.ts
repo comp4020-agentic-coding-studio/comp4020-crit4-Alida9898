@@ -50,6 +50,35 @@ export function waterLevelFor(hz: number): number {
   return clamp01(Math.log(hz / EMPTY_HZ) / Math.log(FULL_HZ / EMPTY_HZ));
 }
 
+/** How far below the struck register a blown glass speaks. One octave. */
+export const BLOWN_OCTAVES_DOWN = 1;
+
+/**
+ * Blown across the rim instead of struck, so the pitch runs the OTHER WAY:
+ * more water rings HIGHER.
+ *
+ * Both standard models of a blown bottle agree, and both say the same thing:
+ * as a Helmholtz resonator `f` goes as `1/sqrt(V)` where `V` is the *air*
+ * above the water, and as a stopped pipe `f = v/4L` where `L` is the air
+ * column's length. Either way it is the air that sounds, not the glass, so
+ * adding water shortens what is ringing and the note goes up.
+ *
+ * Which is why this is `frequencyAt(1 - water)`: the `1 - water` is not an
+ * algebraic trick to flip the curve, it is literally the air fraction, and
+ * the struck curve read against air instead of water is already the blown
+ * one. The octave down is a choice rather than physics --- a blown bottle is
+ * a low woody note next to a bright ping, and sharing the struck register
+ * would make the two modes sound like one instrument with a filter on it.
+ *
+ * This direction is the easiest thing in the project to get backwards and it
+ * is inaudible as a bug (an instrument tuned backwards still plays, it just
+ * lies about water), so spec/tuning.test.ts holds it against `frequencyAt`
+ * rather than leaving it to this comment.
+ */
+export function blownFrequencyAt(water: number): number {
+  return frequencyAt(1 - clamp01(water)) / 2 ** BLOWN_OCTAVES_DOWN;
+}
+
 /**
  * Which note this water level is closest to. Compared in log space, because a
  * semitone is a semitone whether it's down at C4 or up at C6.

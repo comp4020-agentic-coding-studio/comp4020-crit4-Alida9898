@@ -4,6 +4,7 @@ import {
   DEGREES_HZ,
   EMPTY_HZ,
   FULL_HZ,
+  blownFrequencyAt,
   brightness,
   defaultWaterLevels,
   degreeIndexAt,
@@ -40,6 +41,70 @@ describe("water rings the way water actually rings", () => {
   it("round-trips through the inverse", () => {
     for (let water = 0; water <= 1; water += 0.1) {
       expect(waterLevelFor(frequencyAt(water))).toBeCloseTo(water, 6);
+    }
+  });
+});
+
+describe("blown, the water means the opposite thing", () => {
+  // The whole reason blowing earns a place next to striking: it is the same
+  // water level read a second time, the other way up. If these two ever ran
+  // the same direction the mode would be a change of tone colour and nothing
+  // more -- and NOTHING would say so, because both directions play fine.
+  it("rings higher the fuller the glass gets", () => {
+    for (let water = 0; water < 1; water += 0.05) {
+      expect(
+        blownFrequencyAt(water + 0.05),
+        `filling from ${water.toFixed(2)} lowered the blown pitch — a BLOWN vessel rises as it fills, because it is the air that sounds and there is less of it`,
+      ).toBeGreaterThan(blownFrequencyAt(water));
+    }
+  });
+
+  it("runs opposite the struck mode at every level, not just at the ends", () => {
+    for (let water = 0; water < 1; water += 0.05) {
+      const struckRose = frequencyAt(water + 0.05) > frequencyAt(water);
+      const blownRose = blownFrequencyAt(water + 0.05) > blownFrequencyAt(water);
+      expect(blownRose, `both modes moved the same way at water ${water.toFixed(2)}`).toBe(
+        !struckRose,
+      );
+    }
+  });
+
+  it("speaks an octave below the struck register, so the two are not one voice", () => {
+    // An empty glass is the LOWEST blown note (most air) and the highest
+    // struck one, which is the inversion stated as pitch rather than slope.
+    expect(blownFrequencyAt(0)).toBeCloseTo(FULL_HZ / 2, 4);
+    expect(blownFrequencyAt(1)).toBeCloseTo(EMPTY_HZ / 2, 4);
+  });
+
+  it("stays in a range a vessel could plausibly speak in", () => {
+    for (let water = 0; water <= 1; water += 0.1) {
+      expect(blownFrequencyAt(water)).toBeGreaterThan(100);
+      expect(blownFrequencyAt(water)).toBeLessThan(600);
+    }
+  });
+
+  it("shrugs off levels from outside the range", () => {
+    expect(blownFrequencyAt(-5)).toBeCloseTo(blownFrequencyAt(0), 6);
+    expect(blownFrequencyAt(99)).toBeCloseTo(blownFrequencyAt(1), 6);
+  });
+
+  it("keeps 'no way to play it wrong' true after the switch", () => {
+    // Inverting the water level maps the pentatonic onto another mode of
+    // itself, so the rack stays consonant blown even though the pitches are
+    // a different set from the struck degrees. Held as the property that
+    // matters -- no two notes a semitone apart -- rather than against a list.
+    const semitones = defaultWaterLevels()
+      .map((level) => 12 * Math.log2(blownFrequencyAt(level) / blownFrequencyAt(0)))
+      .map((value) => Math.round(value));
+
+    for (const a of semitones) {
+      for (const b of semitones) {
+        const apart = Math.abs(a - b) % 12;
+        expect(
+          apart === 1 || apart === 11,
+          `blown, two glasses land ${apart} semitone(s) apart — a minor second in the rack means there IS a way to play it wrong`,
+        ).toBe(false);
+      }
     }
   });
 });
@@ -115,7 +180,11 @@ describe("the waterline follows the hand", () => {
   });
 });
 
-describe("pouring rings the notes it passes", () => {
+// Pouring is silent now --- these no longer describe anything you can hear.
+// They still matter: degreeIndexAt is what snapToScale settles a glass with,
+// so this is the mapping the tuning gesture lands on, just without the chimes
+// it used to announce on the way.
+describe("the notes a pour passes through", () => {
   it("walks the scale one note at a time as the glass fills", () => {
     const seen = [];
     for (let water = 0; water <= 1; water += 0.002) seen.push(degreeIndexAt(water));
