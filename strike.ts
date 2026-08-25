@@ -2,6 +2,7 @@
 // sound made in the page, and spec/instrument.test.ts fails the build if an
 // audio file ever ships.
 
+import { BEAT_SECONDS, MAX_NUDGE_SECONDS, quantizedDelay } from "./rhythm.ts";
 import { brightness, strikeGain } from "./tuning.ts";
 
 /**
@@ -64,11 +65,18 @@ export function wake(): AudioContext {
   return context;
 }
 
-export function strike(hz: number, force: number): void {
+/**
+ * `quantize` pulls a strike onto the hidden beat by up to `MAX_NUDGE_SECONDS`
+ * — see rhythm.ts. Only a struck note (a tap, a sweep, a key) asks for it;
+ * pouring's own chimes are tied to the hand still moving, so they stay
+ * un-nudged rather than fighting a grid the player never asked for.
+ */
+export function strike(hz: number, force: number, quantize = false): void {
   const ctx = wake();
   if (!bus) return;
 
-  const now = ctx.currentTime;
+  const rawNow = ctx.currentTime;
+  const now = quantize ? rawNow + quantizedDelay(rawNow, BEAT_SECONDS, MAX_NUDGE_SECONDS) : rawNow;
   const peak = strikeGain(force);
   const bright = brightness(force);
 

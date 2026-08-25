@@ -48,12 +48,12 @@ function paint(index: number): void {
   glass.setAttribute("aria-valuenow", String(Math.round(level * 100)));
 }
 
-function ring(index: number, force: number, hz?: number): void {
+function ring(index: number, force: number, hz?: number, quantize = false): void {
   const level = water[index];
   const glass = glasses[index];
   if (level === undefined || !glass) return;
 
-  strike(hz ?? frequencyAt(level), force);
+  strike(hz ?? frequencyAt(level), force, quantize);
   // A struck glass shivers. Restarting the animation means a fast sweep flashes
   // each glass separately instead of one long smear.
   glass.classList.remove("ringing");
@@ -100,8 +100,10 @@ rack?.addEventListener("pointerdown", (event: PointerEvent) => {
 
   // Touching a glass rings it, always and immediately --- that is the whole
   // cold-start promise, and making it wait to see if a drag follows would put
-  // a delay on the one interaction that must feel instant.
-  ring(index, 0.55);
+  // a delay on the one interaction that must feel instant. `quantize` is a
+  // separate, much smaller thing: a ≤80ms nudge onto the hidden pulse, well
+  // under what a hand can feel as lag.
+  ring(index, 0.55, undefined, true);
 
   gesture = {
     mode: "undecided",
@@ -146,7 +148,12 @@ rack?.addEventListener("pointermove", (event: PointerEvent) => {
 
   const index = glassAt(event.clientX, event.clientY);
   if (index !== undefined && index !== gesture.glass) {
-    ring(index, forceFromSpeed(event.clientX - gesture.lastX, event.timeStamp - gesture.lastAt));
+    ring(
+      index,
+      forceFromSpeed(event.clientX - gesture.lastX, event.timeStamp - gesture.lastAt),
+      undefined,
+      true,
+    );
     gesture.glass = index;
   }
   gesture.lastX = event.clientX;
@@ -179,7 +186,7 @@ rack?.addEventListener("pointercancel", release);
 document.addEventListener("keydown", (event: KeyboardEvent) => {
   const digit = Number(event.key);
   if (Number.isInteger(digit) && digit >= 1 && digit <= BOTTLE_COUNT) {
-    ring(digit - 1, 0.7);
+    ring(digit - 1, 0.7, undefined, true);
     glasses[digit - 1]?.focus();
     return;
   }
@@ -211,7 +218,7 @@ document.addEventListener("keydown", (event: KeyboardEvent) => {
     }
     case "Enter":
     case " ":
-      ring(index, 0.7);
+      ring(index, 0.7, undefined, true);
       break;
     default:
       return;

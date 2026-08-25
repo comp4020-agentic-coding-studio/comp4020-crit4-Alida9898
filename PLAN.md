@@ -16,7 +16,7 @@ tests fail the build if any ever do).
 
 ## Where it stands
 
-`pnpm check` is green — 50 tests, including the five in `spec/instrument.test.ts`
+`pnpm check` is green — 56 tests, including the five in `spec/instrument.test.ts`
 that were red on purpose when the week started. `ab a11y` in Chrome reports zero
 violations. Both marking viewports fit with no scroll.
 
@@ -93,23 +93,32 @@ sound different" would have been fabricated rather than true.
 
 Water level does not have this problem. The player sets it, and it stays set.
 
-## Open, and where we stopped
+## Rhythm: a hidden pulse taps quantise onto
 
-The design still feels thin, and the diagnosis we landed on is that **nothing
-accumulates** — you tap, it rings, it is gone. Tuning changes one glass and has
-no consequence beyond that glass.
-
-The goal underneath is: *someone who cannot play music should be able to make
-music here.* Pitch is already handled (pentatonic — nothing clashes). What is
-not handled is **rhythm**: taps land exactly when they land, so it still sounds
+The design felt thin, and the diagnosis was that **nothing accumulates** — you
+tap, it rings, it is gone. Tuning changes one glass and has no consequence
+beyond that glass. Pitch was already handled (pentatonic — nothing clashes);
+**rhythm** was not: taps landed exactly when they landed, so it still sounded
 like someone tapping at random.
 
-**Next thing to try — quantisation (~40 min).** Run a hidden pulse and nudge
-each strike onto the nearest beat (≤80ms, below notice). Not the player getting
-tighter, the page aligning them — the reason a drum machine makes anyone sound
-like a drummer. It also completes the pour gesture: *pour to choose which notes
-exist* (anyone can), *tap to play* (quantised, so anyone is in time). Neither
-half needs musical knowledge.
+Built: `rhythm.ts` holds a silent 100 BPM pulse and one pure function,
+`quantizedDelay(now, beat, maxNudge)`, that holds a strike back by at most
+80ms so it falls on the grid — never rewinding a strike that just missed a
+beat (there is no scheduling audio in the past), never holding one longer than
+the cap even when the true nearest beat is farther off. `strike()` takes an
+optional `quantize` flag and shifts its whole schedule by that delay;
+`spec/rhythm.test.ts` holds the cap, the no-rewind rule, and the exact-landing
+case. Confirmed live in Chrome by monkey-patching `OscillatorNode.start` and
+reading the scheduled-time-minus-now delta across several taps: 0, 0.08, 0.08,
+0, 0, 0, 0.0773, 0.048 — always in `[0, 0.08]`, never maxed by default.
+
+Only discrete "play this glass" actions are quantised — the initial tap, a
+sweep across the rack, and the keyboard's digits/Enter/Space. Pouring's
+per-note chime, the release settle-ring, and arrow-key water adjustment stay
+un-nudged, because those are tied to a hand still moving or a gesture
+confirming itself, not a "when did I mean to hit this" moment. This completes
+the pour/tap split: *pour to choose which notes exist* (anyone can), *tap to
+play* (quantised, so anyone is in time). Neither half needs musical knowledge.
 
 Considered and rejected for now:
 
