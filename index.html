@@ -84,9 +84,19 @@
           taper read as a lab flute ("矮一点、稍微宽一点，有一点弧度的圆弧形").
           Water, its waterline and the highlights all clip to this, so nothing
           hand-set in a single glass block can draw itself outside the curve.
+
+          The top closes with an arc (mirroring the floor's), not a straight
+          line: a straight closure put a flat edge exactly through the
+          waterline ellipse's own vertical centre at cy=14, so a full glass
+          rendered as half a coloured ellipse and half bare background. The
+          arc bulges the closure up past y=14 to y=8, matching the rim
+          ellipse's own extent, so the waterline ellipse sits entirely inside
+          the clip instead of getting bisected by it.
         -->
         <clipPath id="vessel-clip">
-          <path d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14 Z" />
+          <path
+            d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14 A25 6 0 0 0 10 14 Z"
+          />
         </clipPath>
       </defs>
     </svg>

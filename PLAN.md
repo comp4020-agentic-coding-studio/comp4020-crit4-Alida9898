@@ -229,64 +229,81 @@ computer-tool clicks in this environment don't reliably deliver a real
 
 ## Tumbler shape and clear water
 
-User's own words: "这个水的颜色太突兀了，不要这种蓝色，要那种透明一点的。 然后杯子的形状也改一下，改成那种矮一点的、稍微宽一点的玻璃杯，有一点弧度的那种圆弧形的。" — the water colour was too jarring, wanted something more transparent instead of that blue; the glass shape should be shorter, a bit wider, with a rounded arc to the wall.
+Three rounds on the same request, kept as one section rather than three,
+since they're all the same shape/colour redesign settling into place.
 
-- **`vessel-clip` rewritten from straight tapered sides to a curved barrel**
-  (`viewBox` `64×194` → `70×136`; wall path now uses cubic Beziers pulled
-  outward past both the rim and floor edges instead of straight `L` segments).
+**Round 1 — the ask.** "这个水的颜色太突兀了，不要这种蓝色，要那种透明一点的。
+然后杯子的形状也改一下，改成那种矮一点的、稍微宽一点的玻璃杯，有一点弧度的那种
+圆弧形的。" The water colour was too jarring (wanted something more
+transparent instead of that blue); the glass should be shorter, a bit wider,
+with a rounded arc to the wall.
+
+- `vessel-clip` rewritten from straight tapered sides to a curved barrel
+  (`viewBox` `64×194` → `70×136`; the wall path uses cubic Beziers pulled
+  outward past the rim and floor edges instead of straight `L` segments).
   Every glass shares this one `<clipPath>`, so redesigning it once reshaped
-  all seven at once — water rect, surface ellipse, sheens and ripples all clip
-  to it, nothing hand-set can draw outside the new silhouette.
-- **`RIM`/`FLOOR` in `main.ts` moved from 16/164 to 14/112** to match the new
-  viewBox — these are the numbers `paint()` uses at runtime to place the
-  waterline, and they have to agree with the hand-written SVG or the two
-  drift apart silently. `spec/page.test.ts`'s assertions are relational (equal
-  floor across glasses, height proportional to level), not tied to specific
-  pixel values, which is what made re-deriving seven glasses' worth of
-  y/height/cy numbers by hand safe to verify: `pnpm check` passing is the
-  proof the new geometry is internally consistent, not just that it typechecks.
-- **`water-fill` gained `stop-opacity` (0.38–0.5) instead of just paling the
-  hue.** A paler-but-opaque fill still reads as coloured glass; real water is
-  barely a colour of its own; it's tinted by whatever is behind it. Partial
-  opacity is what lets the photo bleed through the water the way light
-  actually would.
-- **`.surface` fill moved from `#b6f4ff` to `#eef7f8`** — same reasoning, the
-  waterline should read as a lit edge on nearly-clear water, not a neon stripe.
+  all seven — water rect, surface ellipse, sheens and ripples all clip to it.
+- `RIM`/`FLOOR` in `main.ts` moved from 16/164 to 14/112 to match the new
+  viewBox — `paint()` places the waterline off these at runtime, and they
+  have to agree with the hand-written SVG or the two drift apart silently.
+  `spec/page.test.ts`'s assertions are relational (equal floor across
+  glasses, height proportional to level), which is what made re-deriving
+  seven glasses' worth of y/height/cy numbers by hand safe to verify:
+  `pnpm check` passing is proof the new geometry is internally consistent,
+  not just that it typechecks.
+- `water-fill` gained `stop-opacity` instead of just paling the hue — a
+  paler-but-opaque fill still reads as coloured glass, and real water is
+  barely a colour of its own, just whatever's tinting it from behind.
 
-Verified by zooming into the rendered rack at both marking viewports (the
-curve reads as a tumbler, not a distorted flute), re-running `ab a11y` (still
-0 violations, contrast still `incomplete` as expected against the photo), and
-dispatching a synthetic strike to confirm the bloom/ripple still clip
-correctly to the new wall shape.
+**Round 2 — two things missed.** "这个水和这个杯子的形状，它不是一体的。你只改了
+杯子，你忘记改水怎么调了...这个杯底和杯子满的时候，这个颜色还是很奇怪...你这个
+水的颜色，包括这个，太冷了" — the water and the glass shape didn't read as one
+thing, and the colour, especially full or at the floor, still looked cold
+against a warm background.
 
-### Follow-up: the water rect didn't reach the new curve, and the tint stayed cold
+- `<rect class="water">` was still `x="10" width="50"`, sized for the old
+  straight-sided flute. The new wall bulges to roughly x=6–64 at the belly,
+  so the rect fell short of it — the clip path could only ever crop the
+  rect, never fill it out to the wall, leaving a visible sliver of bare glass
+  at the belly on every level. Fixed by widening the rect to `x="2"
+  width="66"`, past the curve's actual extent, so the clip path alone
+  determines the water's outline from then on.
+- `water-fill`'s stops (`#eef6f7`/`#cfe4e8`/`#9fbac2`) were blue-grey even at
+  low opacity — a cold tint regardless of what's behind it. Replaced with
+  warm cream-to-tan stops (`#fbeedb`/`#e9cd9c`/`#c8a273`) from the same
+  family as `--edge`/`--muted`. `.surface` and the strike-flash
+  `#bloom-fill` had the same cold-cyan problem and got the same fix, since
+  both sit directly on top of the water.
 
-User's own words, on the result above: "这个水和这个杯子的形状，它不是一体的。你只改了杯子，你忘记改水怎么调了...这个杯底和杯子满的时候，这个颜色还是很奇怪...你这个水的颜色，包括这个，太冷了" — the water and the glass shape didn't read as one thing; the colour, especially at the floor and when full, still looked wrong and too cold against a warm background.
+**Round 3 — the waterline ellipse itself was half-invisible on a full glass.**
+"这个椭圆和杯子还是没对齐。这个杯子满的时候，这个一半椭圆一半有颜色，一半没颜
+色" — the ellipse still didn't line up with the glass; on a full glass, half
+the ellipse showed colour and half didn't.
 
-- **The `<rect class="water">` was still `x="10" width="50"`** — sized for the
-  old straight-sided flute, whose rim and floor were the same width. The new
-  wall bulges out to roughly x=6–64 at the belly (`vessel-clip`'s Bezier
-  control points sit at x=4/66, but the curve itself falls short of them).
-  Because the rect was narrower than the bulge, the clip path could only ever
-  crop it, never fill it out to the wall — leaving a visible sliver of empty
-  glass between the water's straight sides and the curved wall at every level.
-  Fixed by widening the rect to `x="2" width="66"`, comfortably past the
-  curve's actual extent, so the clip path is now the only thing determining
-  the water's outline and it hugs the bulge exactly the way the wall itself
-  does.
-- **`water-fill`'s three stops (`#eef6f7`/`#cfe4e8`/`#9fbac2`) were blue-grey**
-  even at low opacity, which is a cold tint no matter what warm photo sits
-  behind it. Replaced with warm cream-to-tan stops (`#fbeedb`/`#e9cd9c`/
-  `#c8a273`) pulled from the same family as the page's own `--edge`/`--muted`
-  tokens, so the water reads as sunset light passing through glass rather
-  than a cool liquid overlaid on a warm scene. `.surface` (`#eef7f8` →
-  `#fbeedb`) and the strike-flash `#bloom-fill` (`#9ff4ff` → `#ffe9c4`) had
-  the same cold-cyan problem and got the same fix, since both sit directly on
-  top of the water and would have kept the seam visible otherwise.
+- Root cause: `vessel-clip`'s top closed with an implicit straight line (the
+  path's trailing `Z`, from the right rim point back to the left one at
+  `y=14`) rather than a curve. `.surface`/`.ripple-1`/`.ripple-2` are ellipses
+  centred exactly on that line when the glass is full, so the straight edge
+  sliced each one through its own vertical centre — the upper half (`y=8` to
+  `14`) fell outside the clip and showed bare background; only the lower half
+  rendered. The floor already had this solved (its own closing edge is an
+  arc, `A19 5 0 0 0 54 112`, which is why the floor never showed the same
+  problem) — the top just never got the same treatment.
+- Fixed by giving the top the same kind of arc, sized to match the rim
+  ellipse exactly (`A25 6 0 0 0 10 14`) instead of the straight `Z` closure.
+  The clip's top boundary now bulges up to `y=8`, enclosing the waterline
+  ellipse whole instead of bisecting it — the same fix incidentally also
+  corrects `.ripple-1`/`.ripple-2`, which sit at the same height and would
+  have shown the same half-cut on a strike, just briefly enough not to have
+  been reported yet.
 
-Verified the same way: zoomed into full and low glasses at both marking
-viewports to confirm the water now meets the wall with no gap and reads warm
-rather than cold, `pnpm check` (56/56), and `ab a11y` (0 violations).
+Verified each round in both marking viewports and with `ab a11y` (0
+violations throughout, contrast `incomplete` as expected against the photo),
+plus a synthetic `pointerdown`/`pointerup` dispatch to check the bloom/ripple
+against the new geometry — computer-tool clicks don't reliably deliver a real
+`pointerdown` in this environment. `pnpm check` stayed green (56/56) through
+all three rounds, which is what made re-deriving the geometry by hand each
+time safe to trust rather than just hope.
 
 ## Things about this repo that cost time
 
