@@ -227,6 +227,38 @@ synthetic `pointerdown`/`pointerup` and screenshotting mid-animation, since
 computer-tool clicks in this environment don't reliably deliver a real
 `pointerdown`.
 
+## Tumbler shape and clear water
+
+User's own words: "这个水的颜色太突兀了，不要这种蓝色，要那种透明一点的。 然后杯子的形状也改一下，改成那种矮一点的、稍微宽一点的玻璃杯，有一点弧度的那种圆弧形的。" — the water colour was too jarring, wanted something more transparent instead of that blue; the glass shape should be shorter, a bit wider, with a rounded arc to the wall.
+
+- **`vessel-clip` rewritten from straight tapered sides to a curved barrel**
+  (`viewBox` `64×194` → `70×136`; wall path now uses cubic Beziers pulled
+  outward past both the rim and floor edges instead of straight `L` segments).
+  Every glass shares this one `<clipPath>`, so redesigning it once reshaped
+  all seven at once — water rect, surface ellipse, sheens and ripples all clip
+  to it, nothing hand-set can draw outside the new silhouette.
+- **`RIM`/`FLOOR` in `main.ts` moved from 16/164 to 14/112** to match the new
+  viewBox — these are the numbers `paint()` uses at runtime to place the
+  waterline, and they have to agree with the hand-written SVG or the two
+  drift apart silently. `spec/page.test.ts`'s assertions are relational (equal
+  floor across glasses, height proportional to level), not tied to specific
+  pixel values, which is what made re-deriving seven glasses' worth of
+  y/height/cy numbers by hand safe to verify: `pnpm check` passing is the
+  proof the new geometry is internally consistent, not just that it typechecks.
+- **`water-fill` gained `stop-opacity` (0.38–0.5) instead of just paling the
+  hue.** A paler-but-opaque fill still reads as coloured glass; real water is
+  barely a colour of its own; it's tinted by whatever is behind it. Partial
+  opacity is what lets the photo bleed through the water the way light
+  actually would.
+- **`.surface` fill moved from `#b6f4ff` to `#eef7f8`** — same reasoning, the
+  waterline should read as a lit edge on nearly-clear water, not a neon stripe.
+
+Verified by zooming into the rendered rack at both marking viewports (the
+curve reads as a tumbler, not a distorted flute), re-running `ab a11y` (still
+0 violations, contrast still `incomplete` as expected against the photo), and
+dispatching a synthetic strike to confirm the bloom/ripple still clip
+correctly to the new wall shape.
+
 ## Things about this repo that cost time
 
 - **Dev server is 5173**, not the 5177 in older notes — no `server` block in

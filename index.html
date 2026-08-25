@@ -46,10 +46,17 @@
     -->
     <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
       <defs>
+        <!--
+          Real water is barely a colour at all --- it's whatever it's sitting
+          in front of, tinted faintly. The old fill (#8df0ff to #0a5f88, fully
+          opaque) read as coloured glass, not water, and clashed hard with a
+          warm photo behind it. This one carries partial opacity so the warm
+          background bleeds through, the way it would through an actual glass.
+        -->
         <linearGradient id="water-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#8df0ff" />
-          <stop offset="35%" stop-color="#37bce4" />
-          <stop offset="100%" stop-color="#0a5f88" />
+          <stop offset="0%" stop-color="#eef6f7" stop-opacity="0.45" />
+          <stop offset="40%" stop-color="#cfe4e8" stop-opacity="0.38" />
+          <stop offset="100%" stop-color="#9fbac2" stop-opacity="0.5" />
         </linearGradient>
         <!--
           Two separate, narrow streaks read as curved glass catching light. One
@@ -72,13 +79,14 @@
           <stop offset="100%" stop-color="#9ff4ff" stop-opacity="0" />
         </radialGradient>
         <!--
-          The interior silhouette, tapered narrower at the floor than the rim ---
-          a straight-sided cylinder is a graduated beaker, not a glass. Water,
-          its waterline and the highlights all clip to this, so nothing hand-set
-          in a single glass block can draw itself outside the tapered wall.
+          A short, wide tumbler with a gentle outward curve to the wall ---
+          straight sides read as a graduated cylinder, and the previous tall
+          taper read as a lab flute ("矮一点、稍微宽一点，有一点弧度的圆弧形").
+          Water, its waterline and the highlights all clip to this, so nothing
+          hand-set in a single glass block can draw itself outside the curve.
         -->
         <clipPath id="vessel-clip">
-          <path d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16 Z" />
+          <path d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14 Z" />
         </clipPath>
       </defs>
     </svg>
@@ -111,19 +119,19 @@
           aria-valuemax="100"
           aria-valuenow="100"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="16.0" width="48" height="148.0" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="16.0" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="16.0" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="16.0" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="16.0" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="14.0" width="50" height="98.0" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="14.0" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="14.0" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="14.0" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="14.0" rx="25" ry="6" />
           </svg>
         </div>
         <div
@@ -137,19 +145,19 @@
           aria-valuemax="100"
           aria-valuenow="92"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="28.3" width="48" height="135.7" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="28.3" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="28.3" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="28.3" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="28.3" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="22.1" width="50" height="89.9" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="22.1" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="22.1" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="22.1" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="22.1" rx="25" ry="6" />
           </svg>
         </div>
         <div
@@ -163,19 +171,19 @@
           aria-valuemax="100"
           aria-valuenow="83"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="40.7" width="48" height="123.3" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="40.7" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="40.7" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="40.7" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="40.7" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="30.4" width="50" height="81.6" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="30.4" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="30.4" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="30.4" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="30.4" rx="25" ry="6" />
           </svg>
         </div>
         <div
@@ -189,19 +197,19 @@
           aria-valuemax="100"
           aria-valuenow="71"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="59.2" width="48" height="104.8" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="59.2" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="59.2" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="59.2" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="59.2" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="42.6" width="50" height="69.4" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="42.6" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="42.6" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="42.6" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="42.6" rx="25" ry="6" />
           </svg>
         </div>
         <div
@@ -215,19 +223,19 @@
           aria-valuemax="100"
           aria-valuenow="63"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="71.5" width="48" height="92.5" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="71.5" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="71.5" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="71.5" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="71.5" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="50.7" width="50" height="61.3" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="50.7" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="50.7" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="50.7" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="50.7" rx="25" ry="6" />
           </svg>
         </div>
         <div
@@ -241,19 +249,19 @@
           aria-valuemax="100"
           aria-valuenow="50"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="90.0" width="48" height="74.0" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="90.0" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="90.0" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="90.0" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="90.0" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="63.0" width="50" height="49.0" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="63.0" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="63.0" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="63.0" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="63.0" rx="25" ry="6" />
           </svg>
         </div>
         <div
@@ -267,19 +275,19 @@
           aria-valuemax="100"
           aria-valuenow="42"
         >
-          <svg class="glass-art" viewBox="0 0 64 194" aria-hidden="true" focusable="false">
-            <ellipse class="reflect" cx="32" cy="178" rx="17" ry="4" />
-            <ellipse class="cavity" cx="32" cy="164" rx="19" ry="5" />
-            <rect class="water" x="8" y="102.3" width="48" height="61.7" />
-            <ellipse class="water-base" cx="32" cy="164" rx="19" ry="5" />
-            <ellipse class="surface" cx="32" cy="102.3" rx="24" ry="6" />
-            <circle class="bloom" cx="32" cy="102.3" r="26" />
-            <rect class="sheen" x="15" y="16" width="8" height="148" rx="4" />
-            <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
-            <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
-            <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
-            <ellipse class="ripple-1" cx="32" cy="102.3" rx="24" ry="6" />
-            <ellipse class="ripple-2" cx="32" cy="102.3" rx="24" ry="6" />
+          <svg class="glass-art" viewBox="0 0 70 136" aria-hidden="true" focusable="false">
+            <ellipse class="reflect" cx="35" cy="124" rx="17" ry="4" />
+            <ellipse class="cavity" cx="35" cy="112" rx="19" ry="5" />
+            <rect class="water" x="10" y="71.1" width="50" height="40.9" />
+            <ellipse class="water-base" cx="35" cy="112" rx="19" ry="5" />
+            <ellipse class="surface" cx="35" cy="71.1" rx="25" ry="6" />
+            <circle class="bloom" cx="35" cy="71.1" r="27" />
+            <rect class="sheen" x="18" y="14" width="9" height="98" rx="4.5" />
+            <rect class="sheen-dim" x="45" y="14" width="6" height="98" rx="3" />
+            <path class="wall" d="M10 14 C4 45 4 82 16 112 A19 5 0 0 0 54 112 C66 82 66 45 60 14" />
+            <ellipse class="rim" cx="35" cy="14" rx="25" ry="6" />
+            <ellipse class="ripple-1" cx="35" cy="71.1" rx="25" ry="6" />
+            <ellipse class="ripple-2" cx="35" cy="71.1" rx="25" ry="6" />
           </svg>
         </div>
       </div>

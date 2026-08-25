@@ -294,7 +294,9 @@ main {
 }
 
 .surface {
-  fill: #b6f4ff;
+  /* Paler and less saturated than the old #b6f4ff --- a waterline should read
+     as a lit edge on nearly-clear water, not a neon stripe. */
+  fill: #eef7f8;
   filter: drop-shadow(0 0 6px var(--glow));
   clip-path: url("#vessel-clip");
   transition: cy 90ms linear;

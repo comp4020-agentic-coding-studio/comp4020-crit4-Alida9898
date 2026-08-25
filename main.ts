@@ -12,8 +12,8 @@ import {
 } from "./tuning.ts";
 
 /** Where the water lives inside the glass artwork, in viewBox units. */
-const RIM = 16;
-const FLOOR = 164;
+const RIM = 14;
+const FLOOR = 112;
 const DEPTH = FLOOR - RIM;
 
 /** How far a pointer travels before we decide what gesture it is. */
