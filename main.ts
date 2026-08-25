@@ -10,6 +10,7 @@ import {
   pouredLevel,
   snapToScale,
 } from "./tuning.ts";
+import { surfaceRadiiAt } from "./vessel.ts";
 
 /** Where the water lives inside the glass artwork, in viewBox units. */
 const RIM = 14;
@@ -32,6 +33,7 @@ function paint(index: number): void {
 
   const height = level * DEPTH;
   const line = FLOOR - height;
+  const { rx, ry } = surfaceRadiiAt(line);
 
   const body = glass.querySelector(".water");
   body?.setAttribute("y", line.toFixed(1));
@@ -39,12 +41,19 @@ function paint(index: number): void {
   // The ellipse at the waterline is what makes the shape read as a vessel with
   // liquid in it rather than a bar on a chart --- which matters more than it
   // sounds, because the whole design rests on a stranger knowing to tap it.
-  glass.querySelector(".surface")?.setAttribute("cy", line.toFixed(1));
+  // Its rx/ry follow the vessel's own width at this height rather than the
+  // rim's --- the wall bulges wider than the rim in the middle and narrows
+  // past it near the floor, and a fixed-width ellipse ignored that entirely.
+  // Ripples are the same ellipse, twice, spreading from wherever the water
+  // actually is, so they get the same treatment.
+  for (const selector of [".surface", ".ripple-1", ".ripple-2"]) {
+    const ellipse = glass.querySelector(selector);
+    ellipse?.setAttribute("cy", line.toFixed(1));
+    ellipse?.setAttribute("rx", rx.toFixed(1));
+    ellipse?.setAttribute("ry", ry.toFixed(1));
+  }
   // The strike bloom goes off at the waterline, so it follows it.
   glass.querySelector(".bloom")?.setAttribute("cy", line.toFixed(1));
-  // Ripples spread from wherever the water actually is.
-  glass.querySelector(".ripple-1")?.setAttribute("cy", line.toFixed(1));
-  glass.querySelector(".ripple-2")?.setAttribute("cy", line.toFixed(1));
   // An empty glass would otherwise keep a full ellipse of water on its floor.
   glass.querySelector(".water-base")?.setAttribute("opacity", level < 0.01 ? "0" : "1");
 

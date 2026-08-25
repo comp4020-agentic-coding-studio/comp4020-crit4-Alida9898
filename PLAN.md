@@ -305,23 +305,42 @@ against the new geometry — computer-tool clicks don't reliably deliver a real
 all three rounds, which is what made re-deriving the geometry by hand each
 time safe to trust rather than just hope.
 
-**Round 4 — the waterline ellipse's width never changes, and it should.**
+**Round 4 — the waterline ellipse's width never changed, and it should.**
 "你不觉得这个水面应该伴随着杯子的形状发生变化吗？你现在这个水面一直是一个形状
 的，不对吧？" — shouldn't the water surface change shape along with the glass's
 shape? Right now it's always drawn as one fixed shape, which is wrong.
 
-Correct, and not yet fixed. `.surface`/`.ripple-1`/`.ripple-2` are all drawn at
-a constant `rx="25" ry="6"` in every glass regardless of where their `cy` ends
-up — but the tumbler wall (Round 1's Bezier curve) is wider at the belly than
-at the rim, and narrower again at the floor, so a waterline sitting partway
-down the glass should be a wider (or narrower) ellipse than the rim's own,
-not a copy of it. `main.ts`'s `paint()` already moves `cy` per level; it never
-touches `rx`, which is exactly the gap. Planned fix: a pure `halfWidthAtY(y)`
-function (mirroring the wall's own Bezier control points, in the style of
-`tuning.ts`'s pure functions) that `paint()` calls to set `rx` alongside `cy`,
-with the shipped `index.html` markup re-derived to match so the no-script
-state doesn't lie either — pinned by a new relational test the way
-`spec/page.test.ts` already pins `cy`/`y`/`height`.
+Correct. `.surface`/`.ripple-1`/`.ripple-2` were all drawn at a constant
+`rx="25" ry="6"` in every glass regardless of where their `cy` ended up — but
+the tumbler wall (Round 1's Bezier curve) is wider at the belly than at the
+rim, and narrower again at the floor, so a waterline sitting partway down the
+glass should be a wider (or narrower) ellipse than the rim's own, not a copy
+of it.
+
+- `vessel.ts` is a new pure-function module, in `tuning.ts`'s style: it holds
+  the wall's own left-side Bezier control points (copied from
+  `vessel-clip`/`.wall` in `index.html`) and answers `halfWidthAtY(y)` by
+  bisecting the curve's `y(t)` for the matching `t`, then reading `x(t)` off
+  the same curve — no closed-form cubic inverse needed, since `y(t)` climbs
+  monotonically from rim to floor. `surfaceRadiiAt(y)` pairs that width with
+  a `ry` scaled by the rim ellipse's own squash (`6/25`), so a full glass
+  renders pixel-identical to before this existed.
+- `main.ts`'s `paint()` now calls `surfaceRadiiAt(line)` and sets `rx`/`ry`
+  alongside `cy` on `.surface`, `.ripple-1` and `.ripple-2` — the same three
+  elements Round 3 already fixed the vertical position of, so both fixes
+  live in one loop now. `.bloom` keeps its fixed `r="27"`, deliberately: it's
+  the light the strike throws, not the water's own disc, and was already
+  drawn larger than the rim for glow bleed.
+- The shipped `index.html` markup was re-derived glass by glass (via the same
+  formula, run once through `node -e`) so the no-script state matches —
+  glass 1 sits at the rim and is untouched (`rx="25" ry="6"`); glasses 2–7
+  now range up to `rx="28.9" ry="6.9"` at the belly, narrowing back down
+  again past it.
+- `spec/vessel.test.ts` pins the curve as relationships, not hardcoded
+  widths: equal to the rim exactly at the rim, narrower at the floor than the
+  rim, wider in the middle than either end, changing smoothly rather than in
+  jumps, clamped outside `[rim, floor]`, and the same `ry/rx` squash held at
+  every height.
 
 **Raised and deferred — a stemmed goblet instead of a tumbler.** "我突然觉得这
 个杯子可以变成高脚杯，是不是？优雅 那种香槟的杯子" — the glass could become an
@@ -332,7 +351,12 @@ rewrite than anything above (new wall silhouette, a foot, a narrower bowl, the
 water/waterline fit against all of it re-earned from scratch) — enough risk of
 breaking a working, verified instrument to not be worth it this close to the
 gate. Held as a stretch item, only if the gates below are clear with time
-left over; the Round 4 fix above is the one actually in progress.
+left over.
+
+Verified Round 4 in both marking viewports and `ab a11y` (0 violations,
+contrast `incomplete` as expected) plus a synthetic `pointerdown` on a
+partway-filled glass to confirm the ripple/bloom sit on the widened ellipse
+correctly. `pnpm check` is green at 62/62 (6 new in `spec/vessel.test.ts`).
 
 ## Things about this repo that cost time
 
