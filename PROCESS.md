@@ -1,85 +1,59 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and its
-[word counts](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#word-counts)
-cover every deliverable.
-
-## What I built
-
-One paragraph: the thing, and the idea behind it.
+A rack of seven water glasses you tap to play and drag up/down to retune, all
+synthesised live with Web Audio — no audio files ship. The idea is that
+tuning by pouring water is something anyone can do with no musical knowledge
+at all, so the instrument teaches itself as you play with it.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+1. **Pouring raised the water when it should have lowered it, and nothing
+   caught it but a hand.** Dragging down was supposed to fill the glass, but
+   an early version had the sign backwards — drag down, water rises. It still
+   ran, still animated smoothly, and the test suite stayed green the whole
+   time, because a `pointermove` handler with the arithmetic inline isn't
+   something a unit test can reach without a real DOM and real pointer
+   events. Instead of just flipping the sign and moving on, I pulled the
+   whole calculation out into one pure function, `pouredLevel(startLevel, dy,
+   travel)`, so the direction itself could be an assertion rather than
+   something I'd have to re-notice by hand every time I touched the gesture
+   code. I wrote the rule down in `CLAUDE.md` so the next gesture (a drag,
+   scroll, or zoom with a sign in it) gets the same treatment by default
+   instead of repeating the same silent bug.
+   [`87840f9`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-Alida9898/commit/87840f91e11f10deb4908f15bf61d26e5a3c7a76)
 
-1. **what happened** --- the problem, or the thing that went wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+2. **The instrument felt thin even once tapping and pouring both worked, and
+   the reason was that nothing accumulated.** You'd tap a glass, it would
+   ring, and that was the end of it — tuning one glass had no effect on
+   anything beyond that glass. Rather than adding more visual polish to a
+   design that was structurally thin, I added a hidden 100 BPM pulse and a
+   pure `quantizedDelay(now, beat, maxNudge)` function that nudges a strike
+   onto the beat by at most 80ms, so a tap always lands "in time" without the
+   player having to know what a beat is. I didn't just trust that it felt
+   right: I monkey-patched `OscillatorNode.start` in the live page and read
+   the scheduled-time-minus-now delay across several real taps — 0, 0.08,
+   0.08, 0, 0, 0, 0.0773, 0.048 — confirming every one landed inside `[0,
+   0.08]` and the cap wasn't silently being exceeded.
+   [`33d6a6f`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-Alida9898/commit/33d6a6f1def2d3dc2c95e5936ef07f2ba7fa1e0d)
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** --- the standards and checks your work has to satisfy
---- rather than in a retry: a rule added to `CLAUDE.md`, a check wired up, an
-attempt thrown away. Retrying until it passes is the routine case, and changing
-what the work runs against is the skilled one.
-
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
-
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
-
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
-
-> the prompt, verbatim
-
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
-
-### A worked moment, for shape
-
-Delete this section along with the rest of the boilerplate --- it's here to show
-the four jobs in one paragraph, not to be imitated in content.
-
-> The date formatter kept coming back with `toLocaleDateString()` and no locale
-> argument, so the same build rendered differently on my machine and in CI. I'd
-> already re-prompted it twice, which fixed the line but not the habit, so the
-> third time I put the rule in `CLAUDE.md` instead
-> ([`3f9ac21`](https://github.com/YOUR-ORG/YOUR-REPO/commit/3f9ac21)) and added
-> a spec test that fails on a bare `toLocaleDateString`. That's what told me it
-> had actually taken: the test went red against the old code and green against
-> the new, and the next two features it wrote passed it without prompting
-> ([`3f9ac21...b7e0d14`](https://github.com/YOUR-ORG/YOUR-REPO/compare/3f9ac21...b7e0d14)).
+3. **A full glass showed half a waterline ellipse instead of a whole one, and
+   the obvious fixes (resize the ellipse, move it) would have been treating
+   the symptom.** I traced it to the clip path's top edge: it closed with an
+   implicit straight line back to the opposite rim point, so on a full glass
+   that line sliced straight through the middle of the waterline ellipse,
+   cropping the top half to nothing. The floor of the same clip path already
+   used an arc for its closing edge and never showed the bug, which is what
+   told me the top needed the same fix rather than a change to the ellipse
+   itself. I gave the top the same kind of arc, sized to the rim ellipse, and
+   checked it by re-running `pnpm check` (62/62), looking at both marking
+   viewports, and running `ab a11y` to confirm the fix hadn't introduced a
+   new violation.
+   [`56a1a15`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-Alida9898/commit/56a1a152c17ffd98a7cff8b0f7732e05f160ecb0)
 
 ## Before you ship
 
-`pnpm check:evidence` verifies your citations resolve to real commits, that a
-reflection entry the marker reads is in `reflections/`, and that your
-`CLAUDE.md` is there --- before a marker ever opens the file. It checks that
-your map is traceable, not that it is good: the marker judges whether your
-small, deliberately chosen set of moments shows real judgement and reflection. A
-green check is not a substitute for that curation.
-
-Images aren't checked: whether one renders is visible the moment you look. Open
-this file on GitHub and look at it before you ship.
+`pnpm check` is green (62/62), `ab a11y` reports zero violations in Chrome at
+both marking viewports, and contrast against the gradient/photo backgrounds is
+hand-measured and recorded in `styles.css` where axe can't resolve it. Full
+history and the decisions behind the shape of the instrument are in
+`PLAN.md`.
