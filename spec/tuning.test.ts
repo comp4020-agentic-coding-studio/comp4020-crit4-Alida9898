@@ -180,7 +180,11 @@ describe("the waterline follows the hand", () => {
   });
 });
 
-describe("pouring rings the notes it passes", () => {
+// Pouring is silent now --- these no longer describe anything you can hear.
+// They still matter: degreeIndexAt is what snapToScale settles a glass with,
+// so this is the mapping the tuning gesture lands on, just without the chimes
+// it used to announce on the way.
+describe("the notes a pour passes through", () => {
   it("walks the scale one note at a time as the glass fills", () => {
     const seen = [];
     for (let water = 0; water <= 1; water += 0.002) seen.push(degreeIndexAt(water));

@@ -4,10 +4,8 @@ import { bendBlow, startBlow, stopBlow } from "./blow.ts";
 import { strike } from "./strike.ts";
 import {
   BOTTLE_COUNT,
-  DEGREES_HZ,
   blownFrequencyAt,
   defaultWaterLevels,
-  degreeIndexAt,
   frequencyAt,
   pouredLevel,
   snapToScale,
@@ -70,10 +68,11 @@ function replay(glass: HTMLElement, name: string): void {
 }
 
 /**
- * `mallet` is what separates a strike the player MADE from a chime the water
- * passed on its way somewhere: only the former gets the little rod swinging
- * in to tap the glass. Tying that to `ringing` instead would flail the rod
- * once per note through the whole of a pour.
+ * Every call to this is now a strike the player MADE --- pouring is silent, so
+ * there is no longer any such thing as a note the water rang on its way past.
+ * `mallet` stays a parameter rather than becoming always-on because `ringing`
+ * (the bloom and ripples) and `struck` (the rod) are still separate ideas: the
+ * first is the glass responding, the second is the thing that hit it.
  */
 function ring(index: number, force: number, hz?: number, quantize = false, mallet = false): void {
   const level = water[index];
@@ -141,7 +140,6 @@ type Gesture = {
   startLevel: number;
   lastX: number;
   lastAt: number;
-  lastDegree: number;
 };
 
 let gesture: Gesture | undefined;
@@ -181,7 +179,6 @@ rack?.addEventListener("pointerdown", (event: PointerEvent) => {
     startLevel: water[index] ?? 0,
     lastX: event.clientX,
     lastAt: event.timeStamp,
-    lastDegree: degreeIndexAt(water[index] ?? 0),
   };
   rack.setPointerCapture(event.pointerId);
   event.preventDefault();
@@ -224,20 +221,16 @@ rack?.addEventListener("pointermove", (event: PointerEvent) => {
     water[gesture.glass] = level;
     paint(gesture.glass);
 
-    if (gesture.voice === "blow") {
-      // A held note can just BEND, which is the one thing a struck one cannot
-      // do --- so pouring mid-blow is a continuous slide rather than a series
-      // of separate chimes, and the water is audibly the thing moving it.
-      bendBlow(blownFrequencyAt(level));
-      return;
-    }
-
-    // Ring on each note the water passes, in the glass's own voice.
-    const degree = degreeIndexAt(level);
-    if (degree !== gesture.lastDegree) {
-      gesture.lastDegree = degree;
-      ring(gesture.glass, 0.3, DEGREES_HZ[degree]);
-    }
+    // Pouring itself is SILENT. It is a tuning gesture, not a playing one, and
+    // it used to chime at every note the water crossed --- which meant setting
+    // the rack up was the loudest thing on the page, and every adjustment
+    // announced itself whether or not you wanted to hear it yet. You tune in
+    // quiet, then you strike to hear what you built.
+    //
+    // A held blow is the one exception, and not really an exception: that note
+    // is already sounding because your finger is on the rim, so the water
+    // moving under it bends what is there rather than starting anything new.
+    if (gesture.voice === "blow") bendBlow(blownFrequencyAt(level));
     return;
   }
 
@@ -274,15 +267,14 @@ function release(): void {
   gesture = undefined;
 
   if (mode === "pouring") {
-    // Settles onto the last note it rang, so the snap confirms what you just
-    // heard instead of surprising you with somewhere you never went.
+    // Still snaps to the scale --- the tuning is as correct as it ever was,
+    // it just no longer announces itself. The waterline moving to its settled
+    // height is the confirmation now, which is why paint() stays.
     water[glass] = snapToScale(water[glass] ?? 0);
     paint(glass);
-    // Let the held note land on the settled pitch before it goes, so letting
-    // go of a blow confirms the tuning the same way the struck settle-ring
-    // does. Then take it down.
+    // A blow that is still sounding lands on the settled pitch before it goes,
+    // rather than being cut off mid-slide.
     if (voice === "blow") bendBlow(blownFrequencyAt(water[glass] ?? 0));
-    else ring(glass, 0.5);
   }
 
   if (voice === "blow") hushBlow();
@@ -344,7 +336,8 @@ document.addEventListener("keydown", (event: KeyboardEvent) => {
       const direction = event.key === "ArrowUp" ? 1 : -1;
       water[index] = Math.min(1, Math.max(0, (water[index] ?? 0) + direction * step));
       paint(index);
-      ring(index, 0.4);
+      // Silent, like the drag it mirrors. Enter or Space strikes the glass if
+      // you want to hear where the arrows have got you to.
       break;
     }
     case "ArrowLeft":

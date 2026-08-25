@@ -48,14 +48,33 @@ bottle is the opposite — the air column shortens.) This is inaudible as a bug:
 an instrument tuned backwards still plays, it just lies about water. Pinned in
 `spec/tuning.test.ts`, not left to a comment.
 
-### Free while pouring, in tune on release
+### Free while pouring, in tune on release — and, now, silent
 
-Dragging glides the pitch and rings the glass at each note it passes; letting go
-settles onto the last note it rang. The chime-per-note came after the first
-version held a sustained oscillator that "sounded like something screeching" —
-an `OscillatorNode` defaults to a sine, and a steady pure tone next to a struck,
-inharmonic, decaying voice is audibly a second instrument. It was also dishonest
-feedback: the pitches in between are ones the glass cannot keep.
+Dragging moves the waterline freely; letting go settles onto the nearest note of
+the scale. Two revisions, in this order:
+
+1. The first version held a sustained oscillator that glided with the water and
+   "sounded like something screeching" — an `OscillatorNode` defaults to a sine,
+   and a steady pure tone next to a struck, inharmonic, decaying voice is
+   audibly a second instrument. It was also dishonest feedback: the pitches in
+   between are ones the glass cannot keep. Replaced with a chime at each note
+   the water crossed.
+2. **The chimes are now gone too, and pouring makes no sound at all.** Asked for
+   directly: "移动水面的时候，不要发出声音，只有敲击的时候才发出声音." The
+   diagnosis behind it is right — pouring is a *tuning* gesture, not a playing
+   one, and chiming through it made setting the rack up the loudest thing on
+   the page, with every adjustment announcing itself whether or not you wanted
+   to hear it yet. This completes a split the rhythm section already started:
+   **pour in silence to choose which notes exist, strike to play them.**
+
+   What it costs, worth knowing rather than discovering: you can no longer hear
+   where a glass is landing while you tune it. The waterline moving to its
+   settled height is the only confirmation, and you have to strike to check the
+   pitch. That is the trade — a quiet workbench in exchange for tuning by eye.
+
+   The snap itself is untouched: a glass still settles onto the scale exactly as
+   before, it just no longer says so. Arrow-key tuning went silent with it, for
+   the same reason and to keep the keyboard honest to the drag it mirrors.
 
 ### The strike has a contact transient
 
