@@ -2,8 +2,11 @@
 // sound made in the page, and spec/instrument.test.ts fails the build if an
 // audio file ever ships.
 
+import { audioBus, noiseBuffer, wake } from "./audio.ts";
 import { BEAT_SECONDS, MAX_NUDGE_SECONDS, quantizedDelay } from "./rhythm.ts";
 import { brightness, strikeGain } from "./tuning.ts";
+
+export { isAwake, wake } from "./audio.ts";
 
 /**
  * A glass is INHARMONIC: its partials are not whole-number multiples of the
@@ -19,52 +22,6 @@ const PARTIALS = [
   { ratio: 5.43, decay: 0.28, level: 0.13 },
 ];
 
-let context: AudioContext | undefined;
-let bus: DynamicsCompressorNode | undefined;
-let noise: AudioBuffer | undefined;
-
-/** White noise, made once and re-used --- the raw material of the contact tap. */
-function noiseBuffer(ctx: AudioContext): AudioBuffer {
-  if (!noise) {
-    const length = Math.floor(ctx.sampleRate * 0.1);
-    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
-    const samples = buffer.getChannelData(0);
-    for (let i = 0; i < length; i += 1) samples[i] = Math.random() * 2 - 1;
-    noise = buffer;
-  }
-  return noise;
-}
-
-/** Exposed so a test can assert nothing is running before the first gesture. */
-export function isAwake(): boolean {
-  return context !== undefined;
-}
-
-/**
- * The autoplay policy: no AudioContext exists until the player's first gesture.
- * Building it lazily beats building it at load and resuming later --- a context
- * created before any gesture starts out suspended, and some browsers will not
- * let that one back up on a later gesture.
- */
-export function wake(): AudioContext {
-  if (!context) {
-    const ctx = new AudioContext();
-    // Seven glasses can ring at once. Everything routes through a compressor
-    // rather than straight to the destination, because clipping is the one
-    // sound a listener reads as "broken" rather than "loud".
-    const limiter = ctx.createDynamicsCompressor();
-    limiter.threshold.value = -18;
-    limiter.ratio.value = 6;
-    limiter.attack.value = 0.003;
-    limiter.release.value = 0.25;
-    limiter.connect(ctx.destination);
-    context = ctx;
-    bus = limiter;
-  }
-  if (context.state === "suspended") void context.resume();
-  return context;
-}
-
 /**
  * `quantize` pulls a strike onto the hidden beat by up to `MAX_NUDGE_SECONDS`
  * — see rhythm.ts. Only a struck note (a tap, a sweep, a key) asks for it;
@@ -73,6 +30,7 @@ export function wake(): AudioContext {
  */
 export function strike(hz: number, force: number, quantize = false): void {
   const ctx = wake();
+  const bus = audioBus();
   if (!bus) return;
 
   const rawNow = ctx.currentTime;

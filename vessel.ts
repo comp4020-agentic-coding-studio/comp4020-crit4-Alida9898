@@ -75,3 +75,42 @@ export function surfaceRadiiAt(y: number): { rx: number; ry: number } {
   const rx = halfWidthAtY(y);
   return { rx, ry: rx * RIM_SQUASH };
 }
+
+// --- Where the rim ends and the body begins --------------------------------
+//
+// The rim blows and the body strikes, so this line decides which sound a
+// touch makes. It is deliberately NOT the drawn rim: that ellipse spans y=8
+// to y=20 of a 136-unit viewBox, about 9% of the height, which on a phone is
+// a target a few pixels tall --- far under the ~44px a finger needs. So the
+// zone is generous, and grows relative to the art when the art is small.
+
+/** The rim's share of the glass on a large screen. */
+const RIM_BAND = 0.25;
+/** Never a target smaller than this, however small the glass is drawn. */
+const RIM_FLOOR_PX = 28;
+/** ...and never so greedy that the body becomes hard to hit instead. */
+const RIM_CEILING = 0.4;
+
+/**
+ * How tall the blow zone is, in px, for art drawn `heightPx` tall.
+ *
+ * Split out from `isRimZone` so the size can be asserted directly: the whole
+ * reason this is not a plain fraction is the phone case, where a fraction
+ * gives a target too small to hit, and "too small" is a number rather than a
+ * behaviour.
+ */
+export function rimBandHeight(heightPx: number): number {
+  return Math.min(heightPx * RIM_CEILING, Math.max(heightPx * RIM_BAND, RIM_FLOOR_PX));
+}
+
+/**
+ * Does a touch `offsetY` px below the top of the art land on the rim?
+ *
+ * Pure, and tested, for the same reason `pouredLevel()` is: a hit test that is
+ * subtly wrong does not error --- the glass just sometimes makes the other
+ * sound, which reads as a broken instrument rather than as a bug with a line
+ * number.
+ */
+export function isRimZone(offsetY: number, heightPx: number): boolean {
+  return offsetY >= 0 && offsetY < rimBandHeight(heightPx);
+}

@@ -407,6 +407,148 @@ main {
   }
 }
 
+/* --- the two modes, made visible ---
+
+  The rim blows and the body strikes, and nothing about the drawing says so:
+  the boundary is invisible and there is no label anywhere on the page. These
+  two animations ARE the explanation, which is why they are not decoration --
+  a player learns the split by doing one of them by accident and seeing what
+  happened.
+*/
+
+/*
+  A small rod, no hand attached: a hand would need a wrist, an arm and a
+  direction to come from, and all three are more drawing than the point needs.
+  It pivots above the top-right corner, swings in, taps and withdraws.
+
+  transform-box: view-box so the origin is in viewBox units -- the default
+  (fill-box) would put it at the line's own centre, and the rod would spin in
+  place like a propeller instead of swinging from one end.
+
+  The angles below are not derived, they were read off the page: the glass
+  fills 4..66 of a 70-unit viewBox, so there is almost no margin at the right
+  edge, and past about -28deg the whole rod is outside the frame while past
+  about -8deg the tip is through the wall and inside the glass. -24 to -14 is
+  the arc that is both visible and lands where the glass actually is: at -14
+  the tip sits at (62.2, 33.2) and the wall there is at x=62.9, so it meets
+  the glass instead of stopping short of it or passing through. Redraw the
+  vessel and these need re-reading, which is why the range is written down
+  rather than left as three magic numbers.
+*/
+.mallet {
+  stroke: #f0d6a8;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: 70px -10px;
+  transform: rotate(-30deg);
+}
+
+.glass.struck .mallet {
+  animation: tap 420ms cubic-bezier(0.3, 0, 0.4, 1);
+}
+
+@keyframes tap {
+  0% {
+    opacity: 0;
+    transform: rotate(-30deg);
+  }
+
+  20% {
+    opacity: 0.95;
+    transform: rotate(-24deg);
+  }
+
+  /* Contact: the tip meets the wall, rather than stopping short or passing through. */
+  45% {
+    opacity: 1;
+    transform: rotate(-14deg);
+  }
+
+  62% {
+    opacity: 0.85;
+    transform: rotate(-19deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(-30deg);
+  }
+}
+
+/*
+  Air crossing the mouth. Three strokes rather than one, staggered, because a
+  single line reads as a scratch on the glass; three at different speeds read
+  as something moving through. They loop for as long as the note is held --
+  a blow is the only sound here with no fixed length.
+*/
+.gust path {
+  fill: none;
+  stroke: #fffaf0;
+
+  /*
+    Wider and brighter than it first shipped. Air crossing a lit glass is
+    already close to the colour of the glass, so a 1.3-wide stroke at 0.75
+    was a smudge the same tone as what it crossed --- the same mistake the
+    motes made against the sky. The drop-shadow is what separates it from
+    the background rather than the stroke colour, which cannot get much
+    lighter than white.
+  */
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 2px #ffd9a0);
+  opacity: 0;
+}
+
+.glass.blowing .gust-1 {
+  animation: gust 900ms linear infinite;
+}
+
+.glass.blowing .gust-2 {
+  animation: gust 1100ms linear infinite 120ms;
+}
+
+.glass.blowing .gust-3 {
+  animation: gust 1000ms linear infinite 240ms;
+}
+
+@keyframes gust {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  25% {
+    opacity: 0.95;
+  }
+
+  70% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(96px);
+  }
+}
+
+/*
+  The mouse-only half of the discoverability answer: brighten the rim while
+  the pointer is over the band that blows, so the split is findable before
+  you have triggered either sound. A finger has no hover, which is why this
+  is a bonus on top of the animations rather than the whole fix.
+*/
+.glass.rim-hot .rim {
+  opacity: 1;
+  stroke: #fff4de;
+  stroke-width: 2;
+}
+
+.glass.rim-hot {
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .water,
   .water-base,
@@ -419,8 +561,22 @@ main {
   .glass.ringing .bloom,
   .glass.ringing .surface,
   .glass.ringing .ripple-1,
-  .glass.ringing .ripple-2 {
+  .glass.ringing .ripple-2,
+  .glass.struck .mallet {
     animation: none;
+  }
+
+  /*
+    The gust is the only cue that a blown note is sounding at all, so it stays
+    -- reduced to a steady glow rather than removed. Motion is what the
+    preference asks to lose; feedback that something is happening is not.
+  */
+  .glass.blowing .gust-1,
+  .glass.blowing .gust-2,
+  .glass.blowing .gust-3 {
+    animation: none;
+    opacity: 0.5;
+    transform: translateX(48px);
   }
 
   .mote {

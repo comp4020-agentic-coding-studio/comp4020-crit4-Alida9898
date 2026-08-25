@@ -379,7 +379,52 @@ not less. It is also real physics rather than an invented rule, which is what
 `tuning.ts`'s opening comment has said since the first commit without anything
 in the app ever using it.
 
-### Open, and blocking: which way blown pitch runs
+### Built, on the `blow-mode` branch
+
+Settled physics-first (below), then built: `blownFrequencyAt()` in `tuning.ts`,
+a sustained voice in `blow.ts` over a shared `audio.ts`, the rim/body hit split
+in `vessel.ts`, and the two animations. `pnpm check` green at 73/73 (11 new),
+`ab a11y` 0 violations at both marking viewports, neither scrolls.
+
+Confirmed in Chrome rather than assumed, because none of it is visible to the
+suite:
+
+- **The inversion is real on the page, not just in the function.** Reading the
+  frequency off every oscillator the page actually created: struck, the rack
+  runs 262 → 587Hz left to right; blown, the same rack, untouched, runs
+  523 → 233Hz. Ascending one way and descending the other, which is the whole
+  claim this feature rests on.
+- **Nothing is left sounding.** The named risk was a drone with no way to stop
+  it, so `start`/`stop` were counted across every source the page made through
+  a session of blows, sweeps, strikes and every escape hatch: **68 started, 68
+  stopped**. Window blur, `lostpointercapture`, `pointercancel` and keyup each
+  hush from a held note; eight auto-repeat `keydown`s restarted the voice zero
+  times.
+- **The rod's arc had to be read off the page, not derived.** The glass fills
+  4..66 of a 70-unit viewBox, so past about -28° the whole rod is outside the
+  frame and past about -8° its tip is through the wall and inside the glass.
+  Found by rendering seven angles at once, one per glass, and looking --- the
+  usable arc is -24° to -14°, and it is written into `styles.css` beside the
+  keyframes because redrawing the vessel invalidates it silently.
+- **The gust shipped invisible the first time**, for the third time on this
+  page: a pale stroke over a lit glass is the same tone as what it crosses,
+  exactly like the motes against the sky. Fixed with a drop-shadow rather than
+  a lighter colour, there being nowhere lighter than white to go.
+
+Still worth a hand before this merges: **it has not been heard**. Every check
+above is geometry and node bookkeeping --- whether a blown glass actually
+*sounds* blown rather than like a filtered pad is the one thing left, and only
+an ear settles it.
+
+### Settled: which way blown pitch runs
+
+Asked for as "水越少，音越高" --- less water, higher pitch --- and **that was
+backwards**, in the specific way this project is built to catch. It is the same
+direction the struck mode already runs, so it would have left both modes moving
+together and reduced the switch to a change of tone colour, forfeiting the
+reason blowing earns a place at all. Raised before building rather than
+implemented and discovered later; the physics-correct direction was then chosen
+knowingly. Kept below because the reasoning is the point, not the answer.
 
 Asked for as "水越少，音越高" — less water, higher pitch. **That is the same
 direction the struck mode already runs**, and it disagrees with the physics,
@@ -404,10 +449,9 @@ the same direction, and the mode switch would become a change of tone colour
 only — exactly the "one instrument with a filter on it" this section argues
 against, and it would forfeit the reason blowing earns its place at all.
 
-Not building until this is settled. If the answer is "do it backwards anyway
-because it feels better", that is a legitimate call for an instrument, but it
-should be made knowingly and recorded here as a deliberate departure, not left
-looking like the physics.
+Doing it backwards anyway would have been a legitimate call for an instrument
+--- but one to make knowingly and record as a deliberate departure, not to
+leave looking like the physics. The call was to follow the physics.
 
 ### The decisions
 
