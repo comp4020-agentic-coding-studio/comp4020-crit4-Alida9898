@@ -134,6 +134,39 @@ Considered and rejected for now:
   black screen if anything goes wrong in the crit room. Not before the gates are
   done, and if ever, on a branch.
 
+## Shape and light: a tapered vessel, not a cylinder
+
+A straight-sided rect read as a graduated cylinder — lab glassware, not
+something you'd drink from — and the old highlight was one full-width gradient
+rect with hard opacity bands across it, which looked like a ruler's markings
+rather than light on a curved surface. Both were raised directly: "不要是一个
+圆柱子" and "这个高光做得是挺丑的，就是有点实验室风格了。" Three.js was offered
+and turned down (the same reasons as below still applied) in favour of fixing
+this in SVG/CSS.
+
+Fixed with two changes, both keeping the existing paint pipeline untouched:
+
+- A single `<clipPath id="vessel-clip">` holds the tapered silhouette — narrower
+  at the floor than the rim. `.cavity`, `.water`/`.water-base`, `.surface` and
+  the highlights all clip to it, so every fill element crops to "glass-shaped"
+  without touching the per-glass numeric water levels in `index.html` (still
+  `defaultWaterLevels()`, still pinned by `spec/page.test.ts`) or `main.ts`'s
+  paint logic. Only the ellipse radii at the floor (`cavity`, `water-base`,
+  `reflect`) needed to shrink to match the taper visually.
+- The one hard-banded `wall-sheen` gradient became two narrow, blurred,
+  rounded streaks (`highlight-bright`, `highlight-dim`) — two thin lit curves
+  read as glass; one wide shaded rectangle reads as a beaker even softened.
+
+Also bumped `h1` from 0.8rem/`--muted` to a `clamp()` up to 2rem/600 weight/
+`--ink`, raised earlier in the same request ("Water Glasses" 这个字太小了) and
+folded into this pass rather than left for later. `--ink` on `--ground-lift`
+hand-measures at 13.6:1 (AAA), recorded in `styles.css`.
+
+Verified in both marking viewports (agent-browser, since the desktop's window
+manager wouldn't actually shrink to 390 wide) and with `ab a11y`: 0 violations,
+contrast still `incomplete` (expected — gradient ground, per the note below)
+rather than a new failure.
+
 ## Things about this repo that cost time
 
 - **Dev server is 5173**, not the 5177 in older notes — no `server` block in

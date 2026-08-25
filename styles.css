@@ -13,8 +13,9 @@
     that gradient and therefore the worst case for pale text.
       --muted on it   6.6:1
       --link on it   10.0:1
-    Both clear AA. If either the palette or the gradient moves, these are stale
-    and nothing will tell you --- re-measure.
+      --ink on it    13.6:1
+    All clear AA (--ink clears AAA too). If either the palette or the gradient
+    moves, these are stale and nothing will tell you --- re-measure.
   */
   --muted: #8aa7b8;
   --link: #7fd4f0;
@@ -50,10 +51,10 @@ a {
 
 h1 {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--muted);
-  letter-spacing: 0.14em;
+  font-size: clamp(1.3rem, 1rem + 1.6vw, 2rem);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -138,13 +139,10 @@ main {
   opacity: 0.65;
 }
 
-.sheen {
-  fill: url("#wall-sheen");
-}
-
 /* The unlit air below the waterline, so an empty glass is not a hole. */
 .cavity {
   fill: #ffffff0a;
+  clip-path: url("#vessel-clip");
 }
 
 /* --- the water --- */
@@ -152,15 +150,34 @@ main {
 .water,
 .water-base {
   fill: url("#water-fill");
+  clip-path: url("#vessel-clip");
   transition: y 90ms linear, height 90ms linear, cy 90ms linear, opacity 90ms linear;
 }
 
 .surface {
   fill: #b6f4ff;
   filter: drop-shadow(0 0 6px var(--glow));
+  clip-path: url("#vessel-clip");
   transition: cy 90ms linear;
   transform-box: fill-box;
   transform-origin: center;
+}
+
+/* Two narrow, blurred streaks read as light curving over glass; one flat
+   rectangle the width of the wall, even softly shaded, read as a lab beaker. */
+.sheen,
+.sheen-dim {
+  clip-path: url("#vessel-clip");
+  filter: blur(1.1px);
+  pointer-events: none;
+}
+
+.sheen {
+  fill: url("#highlight-bright");
+}
+
+.sheen-dim {
+  fill: url("#highlight-dim");
 }
 
 /* The light a struck glass throws, so the sound has something to look like. */
