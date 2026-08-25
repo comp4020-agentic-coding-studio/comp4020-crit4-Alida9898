@@ -360,15 +360,17 @@ correctly. `pnpm check` is green at 62/62 (6 new in `spec/vessel.test.ts`).
 
 Raised after the gates were done and pushed: "可不可以加一个吹瓶口的那个，就是
 两个模式...一个是敲，一个是吹瓶口." Written down here before any of it is built,
-because it is three pieces of work (an inverted tuning, a second voice, a mode
-control), not one.
+because it is four pieces of work (an inverted tuning, a second sustained
+voice, a rim/body hit split, and an animation for each mode), not one.
 
 ### Why it earns its place rather than decorating
 
 The test this plan already sets for itself is *does it make pouring matter
 more*. Blowing passes it in the strongest possible way: **the same water level
 means opposite things in the two modes.** Struck, water loads the wall and the
-pitch falls. Blown, water shortens the air column and the pitch **rises**. So a
+pitch falls. Blown, water shortens the air column and the pitch **rises** —
+though which way blown actually runs is contested and is the open question
+below, and this whole argument depends on the answer. So a
 glass you poured to be the lowest note of the rack is the *highest* note the
 moment you switch modes, and the rack you tuned into an ascending run plays
 descending. That is not a second instrument bolted on — it is the same water
@@ -377,14 +379,64 @@ not less. It is also real physics rather than an invented rule, which is what
 `tuning.ts`'s opening comment has said since the first commit without anything
 in the app ever using it.
 
+### Open, and blocking: which way blown pitch runs
+
+Asked for as "水越少，音越高" — less water, higher pitch. **That is the same
+direction the struck mode already runs**, and it disagrees with the physics,
+so it is written here as unresolved rather than quietly implemented either way.
+
+Both standard models of a blown bottle give the same answer, and it is the
+opposite one:
+
+- As a **Helmholtz resonator**, `f ∝ 1/√V`, where `V` is the *air* volume above
+  the water. More water shrinks `V`, so `f` goes **up**.
+- As a **stopped pipe**, `f = v/4L`, where `L` is the air column's length. More
+  water shortens `L`, so `f` goes **up**.
+
+More water, higher note. This is the schoolroom bottle demo, and it is the
+whole reason `tuning.ts`'s opening comment has always said a blown bottle is
+"the other way round" from a struck one.
+
+The consequence matters more than the fact. `frequencyAt()` runs
+`EMPTY_HZ` 1046.5 → `FULL_HZ` 261.6, i.e. struck is *already* "less water,
+higher pitch". Building blown to that same rule would leave both modes moving
+the same direction, and the mode switch would become a change of tone colour
+only — exactly the "one instrument with a filter on it" this section argues
+against, and it would forfeit the reason blowing earns its place at all.
+
+Not building until this is settled. If the answer is "do it backwards anyway
+because it feels better", that is a legitimate call for an instrument, but it
+should be made knowingly and recorded here as a deliberate departure, not left
+looking like the physics.
+
 ### The decisions
 
-- **Mode is a visible two-state control, not a hidden gesture.** `pointerdown`
-  already arbitrates three ways (tap / sweep / pour); a fourth hidden mode
-  would fight the other three, and that class of bug is invisible — nothing
-  errors, the gesture just occasionally does the wrong thing. A real `<button>`
-  with `aria-pressed` also gets keyboard and screen-reader support for free,
-  which matches how the seven `role="slider"` glasses already work.
+- **The rim blows, the body strikes — no mode button.** Asked for directly:
+  "不用按钮了...如果是敲平身的话，是敲；如果是点击杯口的话，就是吹." This is
+  better than the button it replaces, because it is the real object's own
+  affordance: you hit the side of a glass and you blow across its mouth, so
+  nothing has to be labelled. Three things it needs before it works:
+  - **A hit band far bigger than the drawn rim.** The rim ellipse is `ry="6"`
+    in a 136-unit viewBox; at 390px wide that is a touch target of a few
+    pixels, well under the ~44px guidance. The blow region should be the top
+    quarter or so of the glass, whether or not anything is drawn there.
+  - **A keyboard path, since a key has no coordinates.** `1`–`7` keep
+    striking; blowing needs its own binding rather than inheriting the hit
+    test.
+  - **Discoverability.** A region that looks like the rest of the glass will
+    never be found. The blow animation below is most of the answer, but it
+    only pays out *after* the first accidental success, so the rim probably
+    needs a resting affordance of its own too.
+- **The sweep stays.** Kept at request. It now means two things depending on
+  the band it travels through: across the bodies it is the existing struck
+  sweep, across the rims it hands one live blown voice from glass to glass and
+  glides like a pan flute.
+- **Both modes get an animation, because neither action currently shows
+  itself.** A small mallet dips and taps the glass on a strike; a gust reads
+  across the mouth on a blow ("有一个风来的感觉，让大家就知道"). These are the
+  discoverability fix as much as decoration — the rim/body split has no visible
+  boundary, so the feedback is what teaches it. The strike already flashes a
+  bloom and ripples; the mallet sits on top of that rather than replacing it.
 - **`blownFrequencyAt(level)` is a pure function in `tuning.ts`, pinned by a
   test that asserts it moves opposite `frequencyAt` for the same input.** This
   is exactly the "inaudible as a bug" class that `pouredLevel()` exists for: an
@@ -403,8 +455,6 @@ in the app ever using it.
 - **The gesture is press-and-hold**, which is also the main risk (below).
   Pouring still works while a note sounds, and now bends the pitch audibly as
   the water moves — a better fit for a sustained voice than for a struck one.
-  A horizontal sweep hands the single live voice to the glass under the finger
-  rather than stacking voices, so it glides like a pan flute.
 - **No quantisation in blow mode.** `quantizedDelay()` exists so a *tap* lands
   on the beat; a held note's musical content is its length and its bend, and an
   80ms delay on the attack of a note you are holding is just lag.
