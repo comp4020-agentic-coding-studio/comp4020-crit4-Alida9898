@@ -259,6 +259,35 @@ curve reads as a tumbler, not a distorted flute), re-running `ab a11y` (still
 dispatching a synthetic strike to confirm the bloom/ripple still clip
 correctly to the new wall shape.
 
+### Follow-up: the water rect didn't reach the new curve, and the tint stayed cold
+
+User's own words, on the result above: "这个水和这个杯子的形状，它不是一体的。你只改了杯子，你忘记改水怎么调了...这个杯底和杯子满的时候，这个颜色还是很奇怪...你这个水的颜色，包括这个，太冷了" — the water and the glass shape didn't read as one thing; the colour, especially at the floor and when full, still looked wrong and too cold against a warm background.
+
+- **The `<rect class="water">` was still `x="10" width="50"`** — sized for the
+  old straight-sided flute, whose rim and floor were the same width. The new
+  wall bulges out to roughly x=6–64 at the belly (`vessel-clip`'s Bezier
+  control points sit at x=4/66, but the curve itself falls short of them).
+  Because the rect was narrower than the bulge, the clip path could only ever
+  crop it, never fill it out to the wall — leaving a visible sliver of empty
+  glass between the water's straight sides and the curved wall at every level.
+  Fixed by widening the rect to `x="2" width="66"`, comfortably past the
+  curve's actual extent, so the clip path is now the only thing determining
+  the water's outline and it hugs the bulge exactly the way the wall itself
+  does.
+- **`water-fill`'s three stops (`#eef6f7`/`#cfe4e8`/`#9fbac2`) were blue-grey**
+  even at low opacity, which is a cold tint no matter what warm photo sits
+  behind it. Replaced with warm cream-to-tan stops (`#fbeedb`/`#e9cd9c`/
+  `#c8a273`) pulled from the same family as the page's own `--edge`/`--muted`
+  tokens, so the water reads as sunset light passing through glass rather
+  than a cool liquid overlaid on a warm scene. `.surface` (`#eef7f8` →
+  `#fbeedb`) and the strike-flash `#bloom-fill` (`#9ff4ff` → `#ffe9c4`) had
+  the same cold-cyan problem and got the same fix, since both sit directly on
+  top of the water and would have kept the seam visible otherwise.
+
+Verified the same way: zoomed into full and low glasses at both marking
+viewports to confirm the water now meets the wall with no gap and reads warm
+rather than cold, `pnpm check` (56/56), and `ab a11y` (0 violations).
+
 ## Things about this repo that cost time
 
 - **Dev server is 5173**, not the 5177 in older notes — no `server` block in
