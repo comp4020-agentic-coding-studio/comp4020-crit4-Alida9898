@@ -16,18 +16,16 @@ tests fail the build if any ever do).
 
 ## Where it stands
 
-`pnpm check` is green — 56 tests, including the five in `spec/instrument.test.ts`
-that were red on purpose when the week started. `ab a11y` in Chrome reports zero
+`pnpm check` is green — 62 tests, including the five in `spec/instrument.test.ts`
+that were red on purpose when the week started and the six in
+`spec/vessel.test.ts` from round 4 below. `ab a11y` in Chrome reports zero
 violations. Both marking viewports fit with no scroll.
 
-**Not done, and all of it blocks submission:**
-
-- `PROCESS.md` is still the template. `pnpm check:evidence` fails on it.
-- `reflections/crit-4.md` does not exist. 150–300 words, first person, two set
-  questions — this one has to be written by a human, not drafted and accepted.
-- **Nothing has ever been pushed.** There are 15 local commits and the site has
-  never deployed. CI only runs when the repo is public, and deploy is what
-  counts as submission. Leave time for the run.
+`PROCESS.md` has real content citing real commits, `reflections/crit-4.md`
+exists (150–300 words, written by hand, not drafted and accepted), and
+everything is pushed — `pnpm check:evidence` passes and `git status -sb` shows
+nothing ahead of `origin/main`. The repo is still private, so none of this has
+triggered CI or a deploy yet; that only happens at `/ship`.
 
 ## The decisions, and why
 
@@ -357,6 +355,77 @@ Verified Round 4 in both marking viewports and `ab a11y` (0 violations,
 contrast `incomplete` as expected) plus a synthetic `pointerdown` on a
 partway-filled glass to confirm the ripple/bloom sit on the widened ellipse
 correctly. `pnpm check` is green at 62/62 (6 new in `spec/vessel.test.ts`).
+
+## Planned, not built: blowing across the rim as a second mode
+
+Raised after the gates were done and pushed: "可不可以加一个吹瓶口的那个，就是
+两个模式...一个是敲，一个是吹瓶口." Written down here before any of it is built,
+because it is three pieces of work (an inverted tuning, a second voice, a mode
+control), not one.
+
+### Why it earns its place rather than decorating
+
+The test this plan already sets for itself is *does it make pouring matter
+more*. Blowing passes it in the strongest possible way: **the same water level
+means opposite things in the two modes.** Struck, water loads the wall and the
+pitch falls. Blown, water shortens the air column and the pitch **rises**. So a
+glass you poured to be the lowest note of the rack is the *highest* note the
+moment you switch modes, and the rack you tuned into an ascending run plays
+descending. That is not a second instrument bolted on — it is the same water
+level being read twice, which makes the pour more load-bearing than it is now,
+not less. It is also real physics rather than an invented rule, which is what
+`tuning.ts`'s opening comment has said since the first commit without anything
+in the app ever using it.
+
+### The decisions
+
+- **Mode is a visible two-state control, not a hidden gesture.** `pointerdown`
+  already arbitrates three ways (tap / sweep / pour); a fourth hidden mode
+  would fight the other three, and that class of bug is invisible — nothing
+  errors, the gesture just occasionally does the wrong thing. A real `<button>`
+  with `aria-pressed` also gets keyboard and screen-reader support for free,
+  which matches how the seven `role="slider"` glasses already work.
+- **`blownFrequencyAt(level)` is a pure function in `tuning.ts`, pinned by a
+  test that asserts it moves opposite `frequencyAt` for the same input.** This
+  is exactly the "inaudible as a bug" class that `pouredLevel()` exists for: an
+  instrument tuned backwards still plays, it just lies about water. The test is
+  the point of the function being separate.
+- **The blown register sits lower than the struck one.** A blown bottle is a
+  low woody note, not a bright ping. Reusing `EMPTY_HZ`/`FULL_HZ` would make the
+  two modes sound like one instrument with a filter on it, which would waste
+  the contrast the mode switch is for. Blown pitches still land on the same
+  pentatonic degrees, so "no way to play it wrong" survives the switch.
+- **The voice is sustained and breathy, with no contact transient.** Bandpassed
+  noise at the resonant frequency plus a weak fundamental, ~120ms attack ramp,
+  holds while held, ~200ms release. The strike's ~30ms noise burst is
+  deliberately absent — the ear decides "struck" from the first few
+  milliseconds, so leaving it out is most of what makes this read as blown.
+- **The gesture is press-and-hold**, which is also the main risk (below).
+  Pouring still works while a note sounds, and now bends the pitch audibly as
+  the water moves — a better fit for a sustained voice than for a struck one.
+  A horizontal sweep hands the single live voice to the glass under the finger
+  rather than stacking voices, so it glides like a pan flute.
+- **No quantisation in blow mode.** `quantizedDelay()` exists so a *tap* lands
+  on the beat; a held note's musical content is its length and its bend, and an
+  80ms delay on the attack of a note you are holding is just lag.
+
+### The risk, named in advance
+
+Every audio path in this project is currently fire-and-forget: `strike()`
+schedules a decay and forgets the node. A held voice is the first thing that
+has to be *torn down*, and a missed `pointerup` leaves a drone sounding with no
+way to stop it — the worst possible failure in a crit room. `pointercancel`,
+window `blur`, and `visibilitychange` all have to release it, not just
+`pointerup`, and the same guard is needed against keyboard auto-repeat firing
+`keydown` many times for one held key.
+
+### How it ships
+
+On a branch, not on `main`. `main` is currently green, pushed, and shippable;
+this is the first change since the gates closed that could plausibly break a
+working instrument, and the goblet redesign below was deferred for the same
+reason. Merge only with `pnpm check` green and both modes confirmed by hand in
+Chrome.
 
 ## Things about this repo that cost time
 
