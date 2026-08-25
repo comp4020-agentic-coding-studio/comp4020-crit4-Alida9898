@@ -25,7 +25,7 @@ violations. Both marking viewports fit with no scroll.
 - `PROCESS.md` is still the template. `pnpm check:evidence` fails on it.
 - `reflections/crit-4.md` does not exist. 150–300 words, first person, two set
   questions — this one has to be written by a human, not drafted and accepted.
-- **Nothing has ever been pushed.** There are 9 local commits and the site has
+- **Nothing has ever been pushed.** There are 15 local commits and the site has
   never deployed. CI only runs when the repo is public, and deploy is what
   counts as submission. Leave time for the run.
 
@@ -304,6 +304,35 @@ against the new geometry — computer-tool clicks don't reliably deliver a real
 `pointerdown` in this environment. `pnpm check` stayed green (56/56) through
 all three rounds, which is what made re-deriving the geometry by hand each
 time safe to trust rather than just hope.
+
+**Round 4 — the waterline ellipse's width never changes, and it should.**
+"你不觉得这个水面应该伴随着杯子的形状发生变化吗？你现在这个水面一直是一个形状
+的，不对吧？" — shouldn't the water surface change shape along with the glass's
+shape? Right now it's always drawn as one fixed shape, which is wrong.
+
+Correct, and not yet fixed. `.surface`/`.ripple-1`/`.ripple-2` are all drawn at
+a constant `rx="25" ry="6"` in every glass regardless of where their `cy` ends
+up — but the tumbler wall (Round 1's Bezier curve) is wider at the belly than
+at the rim, and narrower again at the floor, so a waterline sitting partway
+down the glass should be a wider (or narrower) ellipse than the rim's own,
+not a copy of it. `main.ts`'s `paint()` already moves `cy` per level; it never
+touches `rx`, which is exactly the gap. Planned fix: a pure `halfWidthAtY(y)`
+function (mirroring the wall's own Bezier control points, in the style of
+`tuning.ts`'s pure functions) that `paint()` calls to set `rx` alongside `cy`,
+with the shipped `index.html` markup re-derived to match so the no-script
+state doesn't lie either — pinned by a new relational test the way
+`spec/page.test.ts` already pins `cy`/`y`/`height`.
+
+**Raised and deferred — a stemmed goblet instead of a tumbler.** "我突然觉得这
+个杯子可以变成高脚杯，是不是？优雅 那种香槟的杯子" — the glass could become an
+elegant, stemmed champagne-style glass instead. Real direction, but not for
+today: with the 12:00 deadline this close and `PROCESS.md`/`reflections`/the
+first push still outstanding, a stem-and-foot redesign is a much bigger
+rewrite than anything above (new wall silhouette, a foot, a narrower bowl, the
+water/waterline fit against all of it re-earned from scratch) — enough risk of
+breaking a working, verified instrument to not be worth it this close to the
+gate. Held as a stretch item, only if the gates below are clear with time
+left over; the Round 4 fix above is the one actually in progress.
 
 ## Things about this repo that cost time
 
