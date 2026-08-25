@@ -21,6 +21,19 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <!--
+      Decorative only: no content, nothing focusable, aria-hidden so a screen
+      reader skips it entirely. The motes are staggered by nth-child in
+      styles.css rather than inline styles, so there's nothing per-node to
+      keep in sync here.
+    -->
+    <div class="ambience" aria-hidden="true">
+      <span class="mote"></span>
+      <span class="mote"></span>
+      <span class="mote"></span>
+      <span class="mote"></span>
+      <span class="mote"></span>
+    </div>
     <header>
       <nav aria-label="Primary">
         <a href="./">Home</a>
@@ -72,6 +85,7 @@
 
     <main>
       <h1>Water glasses</h1>
+      <div class="beam" aria-hidden="true"></div>
 
       <!--
         The glasses are written out here rather than built by the script, for two
@@ -108,6 +122,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="16.0" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="16.0" rx="24" ry="6" />
           </svg>
         </div>
         <div
@@ -132,6 +148,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="28.3" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="28.3" rx="24" ry="6" />
           </svg>
         </div>
         <div
@@ -156,6 +174,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="40.7" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="40.7" rx="24" ry="6" />
           </svg>
         </div>
         <div
@@ -180,6 +200,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="59.2" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="59.2" rx="24" ry="6" />
           </svg>
         </div>
         <div
@@ -204,6 +226,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="71.5" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="71.5" rx="24" ry="6" />
           </svg>
         </div>
         <div
@@ -228,6 +252,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="90.0" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="90.0" rx="24" ry="6" />
           </svg>
         </div>
         <div
@@ -252,6 +278,8 @@
             <rect class="sheen-dim" x="44" y="16" width="5" height="148" rx="2.5" />
             <path class="wall" d="M8 16 L13 164 A19 5 0 0 0 51 164 L56 16" />
             <ellipse class="rim" cx="32" cy="16" rx="24" ry="6" />
+            <ellipse class="ripple-1" cx="32" cy="102.3" rx="24" ry="6" />
+            <ellipse class="ripple-2" cx="32" cy="102.3" rx="24" ry="6" />
           </svg>
         </div>
       </div>

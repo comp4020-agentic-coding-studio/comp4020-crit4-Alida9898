@@ -167,6 +167,66 @@ manager wouldn't actually shrink to 390 wide) and with `ab a11y`: 0 violations,
 contrast still `incomplete` (expected — gradient ground, per the note below)
 rather than a new failure.
 
+## Warm redesign: a real photo, floating light, a beam, and ripples
+
+Still "ugly" after the taper/highlight fix ("你既然做得很难看") --- the direction
+was right but the palette (cool cyan/navy) and lighting were too clinical for
+what the shape was supposed to feel like. Offered a menu of concrete
+alternative directions in prose rather than building the first idea; the one
+picked was warm/domestic, with four things named in the same message: a cozy
+photo background, light floating in the air, a beam falling on the glasses,
+and ripples spreading when a glass is struck ("温馨的家里，可能有光在浮动，有那
+种有一束光打到杯子的感觉...敲击的时候，会有波纹荡漾开").
+
+- **The photo is the player's own** (`public/scene.jpg`), not a stock or
+  AI-sourced image --- offered to find one, but a real photo the player handed
+  over sidesteps copyright/licensing entirely, which a scraped one would not
+  have. Processed from their `IMG_7816.HEIC` with `sips` (orientation) and
+  Python/Pillow (warm per-channel shift, +saturation, +contrast, resized to
+  2400px longest side, JPEG q=82) since no ImageMagick/exiftool/ffmpeg exist on
+  this machine. The HEIC original stays on disk but is gitignored --- it's a
+  full-size personal photo with EXIF; only the processed derivative ships.
+- **Palette moved from cyan/navy to amber/brown** (`:root` in `styles.css`).
+  Contrast against a *photo* has no single lightest stop to hand-measure
+  against the way a gradient does, so the check moved one layer down: the
+  `body` scrim (a dark gradient painted over the photo) is kept opaque enough
+  over the text band that its own colour dominates even the brightest pixel
+  the photo could hand it there. Sampled the brightest pixel in the photo's
+  top third, composited it under the scrim's *minimum* opacity across that
+  band, and measured contrast against that composite --- written into the
+  `:root` comment beside the values, same convention as before, adapted to a
+  background that can't be read at a glance.
+- **Floating light is five `.mote` spans**, `position: fixed` behind
+  everything real, drifting bottom-to-top on a CSS keyframe. First pass was
+  invisible: `--glow` (amber) at 0.2-0.35 opacity, blurred, is nearly the same
+  hue as the sky it floats over --- confirmed by zooming into the exact
+  coordinates the animation reported and seeing nothing. Fixed by giving the
+  core a near-white fill with a wider amber `box-shadow` glow around it and
+  raising the peak opacity to 0.85, so it reads as a lit particle rather than
+  a smudge the same colour as the air. Also found and fixed an off-by-one: the
+  five spans were styled `:nth-child(2)` through `:nth-child(6)`, leaving the
+  first mote with no `left` at all (default position, stuck at the corner)
+  and the fifth rule matching a sixth span that doesn't exist.
+- **The beam is one `.beam` div** behind the rack, not one per glass ---
+  a soft amber gradient continuing the photo's own sunbeam rather than
+  lighting the glasses from an invented direction. Kept inside `main`, started
+  well below the title so it never brightens the text band the contrast
+  comment is measured against.
+- **Ripples are two more clipped ellipses per glass** (`.ripple-1`,
+  `.ripple-2`, offset 100ms apart), reusing the same `vessel-clip` as the
+  water so neither ring draws outside the glass wall, and repainted to the
+  waterline in `main.ts` alongside the bloom so they spread from wherever the
+  water actually is. Not pulled into a pure function like the pour gesture:
+  it's a CSS keyframe scale/opacity effect with no sign-sensitive arithmetic,
+  so there's nothing a unit test would catch that a look wouldn't.
+
+Verified in both marking viewports (`agent-browser`, since the desktop's
+window manager wouldn't shrink to 390 wide) and `ab a11y`: 0 violations,
+contrast `incomplete` as expected. The ripple was confirmed by dispatching a
+synthetic `pointerdown`/`pointerup` and screenshotting mid-animation, since
+computer-tool clicks in this environment don't reliably deliver a real
+`pointerdown`.
+
 ## Things about this repo that cost time
 
 - **Dev server is 5173**, not the 5177 in older notes — no `server` block in

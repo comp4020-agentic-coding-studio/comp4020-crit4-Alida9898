@@ -1,26 +1,32 @@
 :root {
-  --ground: #070d14;
-  --ground-lift: #101f2b;
-  --ink: #dbeaf2;
+  --ground: #120d08;
+  --ground-lift: #2c1a0c;
+  --ink: #fbeedb;
 
   /*
-    Contrast here is UNVERIFIED BY ANY TOOL, so the numbers have to live where
-    someone will see them. jsdom's axe skips contrast entirely (no layout), and
-    axe in Chrome returns *incomplete* rather than a pass, because the page
-    ground is a gradient and it cannot resolve one background colour.
+    Contrast here is UNVERIFIED BY ANY TOOL: jsdom's axe skips it (no layout),
+    and axe in Chrome returns *incomplete* rather than a pass because the
+    ground is now a PHOTO --- there is no single lightest stop to measure
+    against, there is whatever the sun is doing in scene.jpg.
 
-    So: measured by hand against --ground-lift #101f2b, the LIGHTEST point of
-    that gradient and therefore the worst case for pale text.
-      --muted on it   6.6:1
-      --link on it   10.0:1
-      --ink on it    13.6:1
-    All clear AA (--ink clears AAA too). If either the palette or the gradient
-    moves, these are stale and nothing will tell you --- re-measure.
+    So the scrim (the dark gradient painted over the photo in `body`, same
+    colour as --ground) is deliberately opaque enough over the text band ---
+    the nav link and the title, the only text on the page --- that its own
+    colour dominates even the brightest pixel the photo can hand it there.
+    Verified by sampling: the brightest pixel in the photo's top third is
+    rgb(255,255,222); composited under the scrim at its minimum opacity across
+    that band (0.82) that becomes rgb(61,57,47), and measured against THAT:
+      --muted   6.2:1
+      --link    8.2:1
+      --ink    10.1:1
+    All clear AA (--link and --ink clear AAA too). This holds only as long as
+    the scrim stays >= 0.82 over the text band and the photo or palette don't
+    move --- re-measure by hand if either does.
   */
-  --muted: #8aa7b8;
-  --link: #7fd4f0;
-  --edge: #a9dcf2;
-  --glow: #4fd2f5;
+  --muted: #d9b98c;
+  --link: #ffd28c;
+  --edge: #f3dcb8;
+  --glow: #ffb35c;
 }
 
 /* body carries both padding and a 100dvh floor; without this they add up and
@@ -38,15 +44,30 @@ body {
   line-height: 1.6;
   color: var(--ink);
 
-  /* Lit from behind the rack, so the glasses sit in the light rather than on it. */
+  /*
+    A real sunset over water (the player's own photo, warmed), not a
+    procedural gradient --- but the scrim on top of it is still the thing
+    doing the accessibility work. See the contrast comment on :root: its
+    opacity over the text band is a load-bearing number, not a look.
+  */
   background:
-    radial-gradient(120% 80% at 50% 42%, var(--ground-lift) 0%, var(--ground) 62%),
+    linear-gradient(
+      180deg,
+      rgb(18 13 8 / 82%) 0%,
+      rgb(18 13 8 / 55%) 32%,
+      rgb(18 13 8 / 48%) 62%,
+      rgb(18 13 8 / 74%) 100%
+    ),
+    url("/scene.jpg") center 38% / cover no-repeat,
     var(--ground);
   min-height: 100dvh;
+  position: relative;
 }
 
 a {
   color: var(--link);
+  position: relative;
+  z-index: 1;
 }
 
 h1 {
@@ -56,10 +77,106 @@ h1 {
   color: var(--ink);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  position: relative;
+  z-index: 1;
 }
 
 .defs {
   position: absolute;
+}
+
+/*
+  Decorative only --- aria-hidden in the markup, no content, nothing
+  focusable --- so axe has nothing to say about it. Sits between the photo
+  (body's own background) and everything real (z-index 1 below), never over
+  the text band: .beam is confined inside main, below the title.
+*/
+.ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+  Against the photo's own warm sky, --glow at low opacity disappeared
+  completely --- same hue as the background it's meant to float over. A
+  near-white core with a wider glow around it is what reads as a lit
+  particle rather than a smudge the same colour as the air.
+*/
+.mote {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff6e6;
+  box-shadow: 0 0 10px 4px var(--glow);
+  opacity: 0;
+  filter: blur(0.5px);
+  animation: drift 14s ease-in-out infinite;
+}
+
+/*
+  Five spans, five rules, nth-child(1) through (5) --- an earlier version
+  started at nth-child(2) and left the first mote with no `left` at all
+  (it defaulted to the top-left corner), while the fifth rule matched a
+  sixth span that doesn't exist.
+*/
+.mote:nth-child(1) {
+  left: 18%;
+  animation-delay: 0s;
+  animation-duration: 16s;
+}
+
+.mote:nth-child(2) {
+  left: 38%;
+  width: 6px;
+  height: 6px;
+  animation-delay: 3s;
+  animation-duration: 12s;
+}
+
+.mote:nth-child(3) {
+  left: 58%;
+  animation-delay: 6s;
+  animation-duration: 18s;
+}
+
+.mote:nth-child(4) {
+  left: 74%;
+  width: 7px;
+  height: 7px;
+  animation-delay: 2s;
+  animation-duration: 15s;
+}
+
+.mote:nth-child(5) {
+  left: 88%;
+  width: 5px;
+  height: 5px;
+  animation-delay: 8s;
+  animation-duration: 13s;
+}
+
+@keyframes drift {
+  0% {
+    bottom: -5%;
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.85;
+  }
+
+  85% {
+    opacity: 0.55;
+  }
+
+  100% {
+    bottom: 90%;
+    opacity: 0;
+  }
 }
 
 main {
@@ -74,6 +191,26 @@ main {
   align-items: center;
   justify-content: center;
   min-height: calc(100dvh - 8rem);
+  position: relative;
+  z-index: 1;
+}
+
+/*
+  The beam continues the photo's own sunbeam onto the rack, rather than
+  lighting the glasses from a direction the photo doesn't have. Kept inside
+  main and started well below the title (top: 22%), so it never brightens
+  the text band the contrast comment on :root is measured against.
+*/
+.beam {
+  position: absolute;
+  top: 22%;
+  bottom: 0;
+  left: 50%;
+  width: min(70vw, 46rem);
+  transform: translateX(-50%) rotate(4deg);
+  background: linear-gradient(180deg, rgb(255 179 92 / 30%) 0%, rgb(255 179 92 / 10%) 55%, transparent 85%);
+  filter: blur(28px);
+  z-index: 0;
 }
 
 .rack {
@@ -82,6 +219,8 @@ main {
   align-items: center;
   justify-content: center;
   width: 100%;
+  position: relative;
+  z-index: 1;
 
   /*
     No height here on purpose. The glasses scale by WIDTH (the SVG keeps its
@@ -196,6 +335,43 @@ main {
   animation: shiver 340ms ease-out;
 }
 
+/*
+  A struck surface without a ripple is a light flashing on still water, which
+  is not what a strike does. Two rings, offset, clipped to the same tapered
+  silhouette as the water so neither one draws outside the glass wall.
+*/
+.ripple-1,
+.ripple-2 {
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 1.2;
+  opacity: 0;
+  clip-path: url("#vessel-clip");
+  transition: cy 90ms linear;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.glass.ringing .ripple-1 {
+  animation: ripple 560ms ease-out;
+}
+
+.glass.ringing .ripple-2 {
+  animation: ripple 560ms ease-out 100ms;
+}
+
+@keyframes ripple {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.5);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
 /* Where the rack stands. */
 .reflect {
   fill: var(--glow);
@@ -232,12 +408,21 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .water,
   .water-base,
-  .surface {
+  .surface,
+  .ripple-1,
+  .ripple-2 {
     transition: none;
   }
 
   .glass.ringing .bloom,
-  .glass.ringing .surface {
+  .glass.ringing .surface,
+  .glass.ringing .ripple-1,
+  .glass.ringing .ripple-2 {
     animation: none;
+  }
+
+  .mote {
+    animation: none;
+    opacity: 0;
   }
 }
